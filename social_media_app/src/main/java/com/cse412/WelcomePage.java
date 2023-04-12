@@ -18,14 +18,13 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Orientation;
 import javafx.scene.paint.Color;
-import java.sql.*;
 
 
 
 
 public class WelcomePage extends Application {
 
-    private static Database db;
+
 
   public void start(Stage primaryStage) {
 
@@ -65,8 +64,8 @@ public class WelcomePage extends Application {
 
     // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
 
-
 // Create a scene and place it in the stage
+ 
     Scene scene1 = new Scene(rootPane1, 700, 600);    // also x and y correlated
     
     primaryStage.setTitle("Social Media App"); // Set the stage title
@@ -75,31 +74,6 @@ public class WelcomePage extends Application {
   }
 
 public static void main(String[] args) {
-
-        try{
-            db = new Database();
-        }
-        catch(SQLException e){
-            e.printStackTrace();
-            
-        }
-        catch(ClassNotFoundException e){
-            e.printStackTrace();
-        }
-        try{
-        ResultSet rs = db.getAllUserInfo(1);
-        ResultSetMetaData rsmd = rs.getMetaData();
-        int colCount = rsmd.getColumnCount();
-        while(rs.next()){
-            for(int i = 1; i <= colCount; i++){
-                Object val = rs.getObject(i);
-                System.out.println(val);
-            }
-        }
-        }
-        catch(SQLException e){
-            e.printStackTrace();
-        }
       launch(args);
   }
 }

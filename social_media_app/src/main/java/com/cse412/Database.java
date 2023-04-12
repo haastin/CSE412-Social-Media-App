@@ -306,7 +306,7 @@ public int fetchPhotoUser(int photoID) throws SQLException{
     stmt.setInt(1, photoID);
     ResultSet rs = stmt.executeQuery();
     if(rs.next()){
-        return rs.getInt("uid")
+        return rs.getInt("uid");
     }
     return -1;
 }
