@@ -2,6 +2,13 @@ package com.cse412;
 
 import java.sql.*;
 import java.lang.System;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+
+import javafx.util.Pair;
+
+import java.util.HashMap;
 
 public class Database {
 
@@ -16,13 +23,26 @@ public class Database {
     }
 
     /* browsing_homepage.sql */
-    ResultSet getAllPidsOfUsersNotLoggedIn(int uid) throws SQLException {
+    List<Integer> getAllPidsOfUsersNotLoggedIn(int uid) throws SQLException {
 
+        List<Integer> pids = new ArrayList<Integer>();
         String query = "SELECT p.pid FROM Photos AS p, Albums AS a WHERE p.aid = a.aid AND a.uid != ?";
-        PreparedStatement stmt = conn.prepareStatement(query);
-        stmt.setInt(1, uid);
-        ResultSet rs = stmt.executeQuery();
-        return rs;
+        try (
+                PreparedStatement stmt = conn.prepareStatement(query);) {
+
+            stmt.setInt(1, uid);
+
+            try (
+                    ResultSet rs = stmt.executeQuery();) {
+
+                while (rs.next()) {
+                    pids.add(rs.getInt("pid"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return pids;
     }
 
     /* browsing_own_profile.sql */
@@ -292,47 +312,76 @@ public class Database {
     }
 
     /* render_photo.sql */
-    public ResultSet fetchPhotoInfo(int photoID) throws SQLException {
+    public Photo fetchPhotoInfo(int photoID) throws SQLException {
         String sql = "SELECT p.url, p.caption, p.pid FROM Photos AS p WHERE p.pid = ?";
         PreparedStatement stmt = conn.prepareStatement(sql);
         stmt.setInt(1, photoID);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        Photo photo = new Photo();
+        while(rs.next()){
+           photo.url = rs.getString("url");
+           photo.caption = rs.getString("caption");
+        }
+        
+        return photo;
     }
 
-public int fetchPhotoUser(int photoID) throws SQLException{
-    String sql = "SELECT u.uid, u.firstName, u.lastName FROM Users AS u WHERE u.uid IN(SELECT a.uid FROM Albums as a WHERE a.pid = ?)";
-    PreparedStatement stmt = conn.prepareStatement(sql);
-    stmt.setInt(1, photoID);
-    ResultSet rs = stmt.executeQuery();
-    if(rs.next()){
-        return rs.getInt("uid");
-    }
-    return -1;
-}
-
-    public ResultSet fetchPhotoLikes(int photoID) throws SQLException {
-        String sql = "SELECT u.firstName, u.lastName, COUNT(*) FROM Users AS u WHERE u.uid IN(SELECT l.uid FROM Likes AS l WHERE l.pid = ?)";
+    public User fetchPhotoUser(int photoID) throws SQLException {
+        String sql = "SELECT u.uid, u.firstName, u.lastName FROM Users AS u WHERE u.uid IN(SELECT a.uid FROM Albums as a WHERE a.aid IN(SELECT aid FROM Photos WHERE pid = ?))";
         PreparedStatement stmt = conn.prepareStatement(sql);
         stmt.setInt(1, photoID);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        User user = new User();
+        while(rs.next()){
+            user.firstName = rs.getString("firstName");
+            user.lastName = rs.getString("lastName");
+        }
+        return user;
     }
 
-    public ResultSet fetchPhotoComments(int photoID) throws SQLException {
+    public List<User> fetchPhotoLikers(int photoID) throws SQLException {
+        String sql = "SELECT u.firstName, u.lastName FROM Users AS u WHERE u.uid IN(SELECT l.uid FROM Likes AS l WHERE l.pid = ?)";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setInt(1, photoID);
+        ResultSet rs = stmt.executeQuery();
+        List<User> users = new ArrayList<>();
+        while(rs.next()){
+            User user = new User();
+            user.firstName = rs.getString("firstName");
+            user.lastName = rs.getString("lastName");
+            users.add(user);
+        }
+        return users;
+    }
+
+    public List<Pair<String, Comment>> fetchPhotoComments(int photoID) throws SQLException {
         String sql = "SELECT u.firstName, u.lastName, c.text, c.date FROM Users AS u, Comments AS c WHERE c.pid = ? AND u.uid = c.uid";
         PreparedStatement stmt = conn.prepareStatement(sql);
         stmt.setInt(1, photoID);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Pair<String, Comment>> comments = new ArrayList<>();
+        while(rs.next()){
+            Comment comment = new Comment();
+            comment.text = rs.getString("text"); 
+            comment.date = rs.getString("date");
+            String commenter = rs.getString("firstName") + " " + rs.getString("lastName");
+            Pair<String, Comment> full_comment = new Pair<String,Comment>(commenter, comment);
+            comments.add(full_comment);
+        }
+        return comments;
     }
 
-    public ResultSet fetchPhotoTags(int photoID) throws SQLException {
+    public List<Tag> fetchPhotoTags(int photoID) throws SQLException {
         String sql = "SELECT t.word, t.pid FROM Tags as t WHERE t.pid = ?";
         PreparedStatement stmt = conn.prepareStatement(sql);
         stmt.setInt(1, photoID);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Tag> tags = new ArrayList<>();
+        while(rs.next()){
+            Tag tag = new Tag(rs.getString("word"), rs.getInt("pid"));
+            tags.add(tag);
+        }
+        return tags;
     }
 
     /* searching.sql */
@@ -480,22 +529,22 @@ public int fetchPhotoUser(int photoID) throws SQLException{
         stmt.executeUpdate();
     }
 
-    /* you_may_also_like.sql*/
+    /* you_may_also_like.sql */
     ResultSet getTopTagsForUser(int uid) throws SQLException {
         String query = "SELECT t1.pid, COUNT(*) " +
-                       "FROM Tags as t1 " +
-                       "WHERE t1.word IN " +
-                           "(SELECT t2.word " +
-                           "FROM Tags as t2 " +
-                           "WHERE t2.pid IN " +
-                               "(SELECT p.pid " +
-                               "FROM Photos as p, Albums as a " +
-                               "WHERE p.pid = a.pid AND a.uid = ?) " +
-                           "GROUP BY t2.word " +
-                           "ORDER BY COUNT(*) DESC " +
-                           "LIMIT 5) " +
-                       "GROUP BY t1.pid " +
-                       "ORDER BY COUNT(*) DESC";
+                "FROM Tags as t1 " +
+                "WHERE t1.word IN " +
+                "(SELECT t2.word " +
+                "FROM Tags as t2 " +
+                "WHERE t2.pid IN " +
+                "(SELECT p.pid " +
+                "FROM Photos as p, Albums as a " +
+                "WHERE p.pid = a.pid AND a.uid = ?) " +
+                "GROUP BY t2.word " +
+                "ORDER BY COUNT(*) DESC " +
+                "LIMIT 5) " +
+                "GROUP BY t1.pid " +
+                "ORDER BY COUNT(*) DESC";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, uid);
         ResultSet rs = stmt.executeQuery();

@@ -1,5 +1,8 @@
 package com.cse412;
 
+import java.sql.ResultSet;
+
+
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -18,11 +21,13 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Orientation;
 import javafx.scene.paint.Color;
-
+import java.sql.*;
 
 
 
 public class WelcomePage extends Application {
+
+    private static Database db;
 
 
 
@@ -55,7 +60,7 @@ public class WelcomePage extends Application {
     TextField PassField = new TextField();
 
    	//add the 3 labels and 3 text fields accordingly
-    
+    rootPane1.setCenter(centerPane1);
     centerPane1.add(Username, 0, 4);     
     centerPane1.add(UsernameField, 0, 5);
     centerPane1.add(Password, 0, 6);
@@ -65,7 +70,7 @@ public class WelcomePage extends Application {
     // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
 
 // Create a scene and place it in the stage
- 
+    
     Scene scene1 = new Scene(rootPane1, 700, 600);    // also x and y correlated
     
     primaryStage.setTitle("Social Media App"); // Set the stage title
@@ -74,6 +79,28 @@ public class WelcomePage extends Application {
   }
 
 public static void main(String[] args) {
+
+    try{
+        db = new Database();
+        ResultSet rs = db.getAllUserInfo(1);
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int colCount = rsmd.getColumnCount();
+        
+        while(rs.next()){
+
+            for(int i = 1; i < colCount; i++){
+                String columnName = rsmd.getColumnName(i);
+                Object value = rs.getObject(i);
+                System.out.println(columnName + " = " + value);
+            }
+        }
+    }
+    catch(SQLException e){
+
+    }
+    catch(ClassNotFoundException e){
+
+    }
       launch(args);
   }
 }
