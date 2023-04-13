@@ -82,7 +82,7 @@ public static void main(String[] args) {
 
     try{
         db = new Database();
-        ResultSet rs = db.getAllUserInfo(1);
+        /*ResultSet rs = db.getAllUserInfo(1);
         ResultSetMetaData rsmd = rs.getMetaData();
         int colCount = rsmd.getColumnCount();
         
@@ -93,7 +93,7 @@ public static void main(String[] args) {
                 Object value = rs.getObject(i);
                 System.out.println(columnName + " = " + value);
             }
-        }
+        }*/
     }
     catch(SQLException e){
 

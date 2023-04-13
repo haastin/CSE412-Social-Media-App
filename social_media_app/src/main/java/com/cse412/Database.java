@@ -74,33 +74,58 @@ public class Database {
 
     }
 
-    ResultSet getAllUserInfo(int uid) throws SQLException {
+    User getAllUserInfo(int uid) throws SQLException {
 
         String query = "SELECT * FROM Users as u WHERE u.uid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, uid);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        User user = new User();
+        while(rs.next()){
+            user.firstName = rs.getString("firstName");
+            user.lastName = rs.getString("lastName");
+            user.dob = rs.getString("dob");
+            user.email = rs.getString("email");
+            user.gender = rs.getString("gender");
+            user.hashPass = rs.getString("password");
+            user.hometown = rs.getString("hometown");
+
+        }
+        return user;
     }
 
     /* contribution_score.sql */
-    ResultSet numPhotosEachUserHasUploaded() throws SQLException {
+    List<Pair<Integer, Integer>> numPhotosEachUserHasUploaded() throws SQLException {
 
-        String query = "SELECT COUNT(*), p.uid FROM Photos as p GROUP BY p.uid";
+        String query = "SELECT COUNT(*), a.uid FROM Photos as p, Albums as a WHERE p.aid = a.aid GROUP BY a.uid";
         PreparedStatement stmt = conn.prepareStatement(query);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Pair<Integer, Integer>> allnumphotos = new ArrayList<>();
+        while(rs.next()){
+            Integer uid = (Integer) rs.getInt(2);
+            Integer count = (Integer) rs.getInt(1);
+            Pair<Integer,Integer> numphotos = new Pair<Integer,Integer>(uid, count);
+            allnumphotos.add(numphotos);
+        }
+        return allnumphotos;
     }
 
-    ResultSet numCommentsEachUserHasUploaded() throws SQLException {
+    List<Pair<Integer, Integer>> numCommentsEachUserHasUploaded() throws SQLException {
 
         String query = "SELECT COUNT(*), c.uid FROM Comments as c GROUP BY c.uid";
         PreparedStatement stmt = conn.prepareStatement(query);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Pair<Integer, Integer>> allnumcomments = new ArrayList<>();
+        while(rs.next()){
+            Integer uid = rs.getInt(2);
+            Integer count = rs.getInt(1);
+            Pair<Integer, Integer> numcomments = new Pair<Integer,Integer>(uid, count);
+            allnumcomments.add(numcomments);
+        }
+        return allnumcomments;
     }
 
-    ResultSet firstAndLastNameOfTopTenUsers(int[] uids) throws SQLException {
+    List<User> firstAndLastNameOfTopTenUsers(int[] uids) throws SQLException {
 
         String query = "SELECT u.firstName, u.lastName FROM Users AS u WHERE u.uid IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement stmt = conn.prepareStatement(query);
@@ -115,7 +140,14 @@ public class Database {
         stmt.setInt(9, uids[8]);
         stmt.setInt(10, uids[9]);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<User> toptenusers = new ArrayList<>();
+        while(rs.next()){
+            User user = new User();
+            user.firstName = rs.getString("firstName");
+            user.lastName = rs.getString("lastName");
+            toptenusers.add(user);
+        }
+        return toptenusers;
 
     }
 
@@ -385,15 +417,30 @@ public class Database {
     }
 
     /* searching.sql */
-    public ResultSet searchCommentByText(String text) throws SQLException {
-        String query = "SELECT c.text, u.firstName, u.lastName, COUNT(*) "
+    public List<List<Object>> searchCommentByText(String text) throws SQLException {
+        String query = "SELECT c.text, u.firstName, u.lastName, c.date, COUNT(*) "
                 + "FROM Comments AS c, Users AS u "
                 + "WHERE c.text = ? AND c.uid = u.uid "
                 + "GROUP BY c.uid "
                 + "ORDER BY COUNT(*) DESC";
         PreparedStatement statement = conn.prepareStatement(query);
         statement.setString(1, text);
-        return statement.executeQuery();
+        ResultSet rs = statement.executeQuery();
+        List<List<Object>> comments = new ArrayList<>();
+        while(rs.next()){
+            List<Object> row = new ArrayList<>();
+            String first_last = rs.getString("firstName") + " " + rs.getString("lastName");
+            Comment comment = new Comment();
+            comment.text = rs.getString("text");
+            comment.date = rs.getString("date");
+            row.add(first_last);
+            row.add(comment);
+            Integer count = (Integer) rs.getInt(5); 
+            row.add(count);
+            comments.add(row);
+        }
+        return comments;
+
     }
 
     public ResultSet getPhotoIdsByTag(String tag) throws SQLException {
@@ -460,13 +507,18 @@ public class Database {
         return statement.executeQuery();
     }
 
-    public ResultSet getPhotoIdsByTagWord(String tagWord) throws SQLException {
+    public List<Integer> getPhotoIdsByTagWord(String tagWord) throws SQLException {
         String query = "SELECT t.pid "
                 + "FROM Tags as t "
                 + "WHERE t.word = ?";
         PreparedStatement statement = conn.prepareStatement(query);
         statement.setString(1, tagWord);
-        return statement.executeQuery();
+        ResultSet rs = statement.executeQuery();
+        List<Integer> pids = new ArrayList<>();
+        while(rs.next()){
+            pids.add(rs.getInt("pid"));
+        }
+        return pids;
     }
 
     /* update.sql */
@@ -530,24 +582,35 @@ public class Database {
     }
 
     /* you_may_also_like.sql */
-    ResultSet getTopTagsForUser(int uid) throws SQLException {
+    List<Pair<Integer,Integer>> getTopTagsForUser(int uid) throws SQLException {
         String query = "SELECT t1.pid, COUNT(*) " +
-                "FROM Tags as t1 " +
-                "WHERE t1.word IN " +
-                "(SELECT t2.word " +
-                "FROM Tags as t2 " +
-                "WHERE t2.pid IN " +
-                "(SELECT p.pid " +
-                "FROM Photos as p, Albums as a " +
-                "WHERE p.pid = a.pid AND a.uid = ?) " +
-                "GROUP BY t2.word " +
-                "ORDER BY COUNT(*) DESC " +
-                "LIMIT 5) " +
-                "GROUP BY t1.pid " +
-                "ORDER BY COUNT(*) DESC";
+                  "FROM Tags AS t1 " +
+                  "INNER JOIN (" +
+                  "  SELECT t2.word " +
+                  "  FROM Tags AS t2 " +
+                  "  INNER JOIN (" +
+                  "    SELECT p.pid " +
+                  "    FROM Photos AS p " +
+                  "    INNER JOIN Albums AS a ON p.aid = a.aid " +
+                  "    WHERE a.uid = ?" +
+                  "  ) AS t3 ON t2.pid = t3.pid " +
+                  "  GROUP BY t2.word " +
+                  "  ORDER BY COUNT(*) DESC " +
+                  "  LIMIT 5" +
+                  ") AS t4 ON t1.word = t4.word " +
+                  "INNER JOIN Photos AS ph ON ph.pid = t1.pid " +
+                  "INNER JOIN Albums AS ab ON ph.aid = ab.aid " +
+                  "WHERE ab.uid != ? " +
+                  "GROUP BY t1.pid " +
+                  "ORDER BY COUNT(*) DESC";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, uid);
+        stmt.setInt(2, uid);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Pair<Integer,Integer>> top_tags = new ArrayList<>();
+        while(rs.next()){
+            top_tags.add(new Pair<Integer,Integer>(rs.getInt("pid"), rs.getInt(2)));
+        }
+        return top_tags;
     }
 }
