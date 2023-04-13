@@ -46,31 +46,47 @@ public class Database {
     }
 
     /* browsing_own_profile.sql */
-    ResultSet getAllAlbumsOfLoggedInUser(int uid) throws SQLException {
+    List<Album> getAllAlbumsOfLoggedInUser(int uid) throws SQLException {
 
-        String query = "SELECT aid, albumName, dateCreated FROM Albums as a WHERE a.uid = ? GROUP BY a.uid";
+        String query = "SELECT aid, albumName, dateCreated FROM Albums as a WHERE a.uid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, uid);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Album> albums = new ArrayList<>();
+        while(rs.next()){
+            Album album = new Album();
+            album.aid = rs.getInt("aid");
+            album.albumName = rs.getString("albumName");
+            album.dateCreated = rs.getString("dateCreated");
+            albums.add(album);
+        }
+        return albums;
     }
 
-    ResultSet getAllPhotosInAnAlbum(int aid) throws SQLException {
+    List<Integer> getAllPhotosInAnAlbum(int aid) throws SQLException {
 
-        String query = "SELECT aid, albumName, dateCreated FROM Albums as a WHERE a.uid = ? GROUP BY a.uid";
+        String query = "SELECT p.pid FROM Photos as p, Albums as a WHERE a.aid = p.aid AND p.aid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, aid);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Integer> pics = new ArrayList<>();
+        while(rs.next()){
+            pics.add(rs.getInt("p.pid"));
+        }
+        return pics;
     }
-
-    ResultSet getAllPhotosOfLoggedInUser(int uid) throws SQLException {
+    
+    List<Integer> getAllPhotosOfLoggedInUser(int uid) throws SQLException {
 
         String query = "SELECT pid FROM Photos AS p, Albums AS a WHERE p.aid = a.aid AND a.uid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, uid);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Integer> pics = new ArrayList<>();
+        while(rs.next()){
+            pics.add(rs.getInt("pid"));
+        }
+        return pics;
 
     }
 
@@ -306,41 +322,57 @@ public class Database {
     /* regarding_friends.sql */
     // Find users that match first and last name when searching for friend (given
     // first and last name)
-    public ResultSet findUsersByName(String firstName, String lastName) throws SQLException {
+    public List<Integer> findUsersByName(String firstName, String lastName) throws SQLException {
         String query = "SELECT u.uid FROM Users AS u WHERE u.firstName = ? AND u.lastName = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setString(1, firstName);
         stmt.setString(2, lastName);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Integer> uids = new ArrayList<>();
+        while(rs.next()){
+            uids.add(rs.getInt("u.uid"));
+        }
+        return uids;
     }
 
     // Fetch all friends of a user (given user id)
-    public ResultSet getAllFriends(int uid) throws SQLException {
+    public List<Integer> getAllFriends(int uid) throws SQLException {
         String query = "SELECT f.fid FROM Friends AS f WHERE f.uid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, uid);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Integer> uids = new ArrayList<>();
+        while(rs.next()){
+            uids.add(rs.getInt("f.fid"));
+        }
+        return uids;
     }
 
     // Fetch all users that have this user ID as a friend
-    public ResultSet getAllUsersWhoFriendedThisUser(int fid) throws SQLException {
+    public List<Integer> getAllUsersWhoFriendedThisUser(int fid) throws SQLException {
         String query = "SELECT f.uid FROM Friends AS f WHERE f.fid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, fid);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Integer> uids = new ArrayList<>();
+        while(rs.next()){
+            uids.add(rs.getInt("f.uid"));
+        }
+        return uids;
     }
 
     // Fetch all friends of friends of a user (given user id)
-    public ResultSet getAllFriendsOfFriends(int uid) throws SQLException {
-        String query = "SELECT f2.uid, COUNT(*) FROM Friends AS f2 WHERE f2.fid IN (SELECT f1.uid FROM Friends AS f1 WHERE f1.fid = ?) AND f2.uid NOT IN (SELECT f1.uid FROM Friends AS f1 WHERE f1.fid = ?) GROUP BY f2.uid";
+    public List<Integer> getAllFriendsOfFriends(int uid) throws SQLException {
+        String query = "SELECT f2.fid FROM Friends AS f2 WHERE f2.uid IN (SELECT f1.fid FROM Friends AS f1 WHERE f1.uid = ?) AND f2.fid NOT IN (SELECT f1.fid FROM Friends AS f1 WHERE f1.uid = ?) GROUP BY f2.fid HAVING COUNT(*) > 1 ORDER BY COUNT(*) DESC";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, uid);
         stmt.setInt(2, uid);
         ResultSet rs = stmt.executeQuery();
-        return rs;
+        List<Integer> uids = new ArrayList<>();
+        while(rs.next()){
+            uids.add(rs.getInt("f2.fid"));
+        }
+        return uids;
     }
 
     /* render_photo.sql */
@@ -418,7 +450,7 @@ public class Database {
 
     /* searching.sql */
     public List<List<Object>> searchCommentByText(String text) throws SQLException {
-        String query = "SELECT c.text, u.firstName, u.lastName, c.date, COUNT(*) "
+        String query = "SELECT c.text, u.firstName, u.lastName, COUNT(*) "
                 + "FROM Comments AS c, Users AS u "
                 + "WHERE c.text = ? AND c.uid = u.uid "
                 + "GROUP BY c.uid "
@@ -432,10 +464,9 @@ public class Database {
             String first_last = rs.getString("firstName") + " " + rs.getString("lastName");
             Comment comment = new Comment();
             comment.text = rs.getString("text");
-            comment.date = rs.getString("date");
             row.add(first_last);
             row.add(comment);
-            Integer count = (Integer) rs.getInt(5); 
+            Integer count = (Integer) rs.getInt(4); 
             row.add(count);
             comments.add(row);
         }
@@ -443,16 +474,24 @@ public class Database {
 
     }
 
-    public ResultSet getPhotoIdsByTag(String tag) throws SQLException {
-        String query = "SELECT pid "
+    public List<Integer> getPhotoIdsByTag(String tag, int uid) throws SQLException {
+        String query = "SELECT t.pid "
                 + "FROM Tags as t "
-                + "WHERE t.word = ?";
+                + "INNER JOIN Photos as p ON t.pid = p.pid "
+                + "INNER JOIN Albums as a ON a.aid = p.aid "
+                + "WHERE t.word = ? AND a.uid != ?";
         PreparedStatement statement = conn.prepareStatement(query);
         statement.setString(1, tag);
-        return statement.executeQuery();
+        statement.setInt(2, uid);
+        ResultSet rs = statement.executeQuery();
+        List<Integer> pids = new ArrayList<>();
+        while(rs.next()){
+            pids.add(rs.getInt("t.pid"));
+        }
+        return pids;
     }
 
-    public ResultSet getOwnPhotoIdsByTag(int uid, String tag) throws SQLException {
+    public List<Integer> getOwnPhotoIdsByTag(int uid, String tag) throws SQLException {
         String query = "SELECT p.pid "
                 + "FROM Photos AS p, Albums AS a "
                 + "WHERE p.aid = a.aid AND a.uid = ? AND p.pid IN "
@@ -460,54 +499,82 @@ public class Database {
         PreparedStatement statement = conn.prepareStatement(query);
         statement.setInt(1, uid);
         statement.setString(2, tag);
-        return statement.executeQuery();
+        ResultSet rs = statement.executeQuery();
+        List<Integer> pids = new ArrayList<>();
+        while(rs.next()){
+            pids.add(rs.getInt("pid"));
+        }
+        return pids;
     }
 
-    public ResultSet getPhotosByMultipleTags(String[] tags) throws SQLException {
+    public List<Integer> getPhotosByMultipleTags(String[] tags, int uid) throws SQLException {
         StringBuilder queryBuilder = new StringBuilder("SELECT t.pid FROM Tags as t WHERE ");
         for (int i = 0; i < tags.length; i++) {
             queryBuilder.append("t.word = ?");
             if (i < tags.length - 1) {
-                queryBuilder.append(" AND ");
+                queryBuilder.append(" OR ");
             }
         }
-        String query = queryBuilder.toString();
-        PreparedStatement statement = conn.prepareStatement(query);
-        for (int i = 0; i < tags.length; i++) {
-            statement.setString(i + 1, tags[i]);
-        }
-        return statement.executeQuery();
-    }
-
-    public ResultSet getPhotosByMultipleTagsAndUser(String[] tags, int uid) throws SQLException {
-        StringBuilder queryBuilder = new StringBuilder("SELECT t.pid FROM Tags as t WHERE ");
-        for (int i = 0; i < tags.length; i++) {
-            queryBuilder.append("t.word = ?");
-            if (i < tags.length - 1) {
-                queryBuilder.append(" AND ");
-            }
-        }
-        queryBuilder.append(" AND t.pid IN "
-                + "(SELECT p.pid FROM Photos as p, Albums as a WHERE p.aid = a.aid AND a.uid = ?)");
+        queryBuilder.append(" AND t.pid NOT IN "
+                + "(SELECT p.pid FROM Photos as p, Albums as a WHERE p.aid = a.aid AND a.uid = ?)"
+                + "GROUP BY t.pid HAVING COUNT(*) = ?");
         String query = queryBuilder.toString();
         PreparedStatement statement = conn.prepareStatement(query);
         for (int i = 0; i < tags.length; i++) {
             statement.setString(i + 1, tags[i]);
         }
         statement.setInt(tags.length + 1, uid);
-        return statement.executeQuery();
+        statement.setInt(tags.length + 2, tags.length);
+        ResultSet rs = statement.executeQuery();
+        List<Integer> pids = new ArrayList<>();
+        while(rs.next()){
+            pids.add(rs.getInt("t.pid"));
+        }
+        return pids;
     }
 
-    public ResultSet getMostPopularTags() throws SQLException {
+    public List<Integer> getPhotosByMultipleTagsAndUser(String[] tags, int uid) throws SQLException {
+        StringBuilder queryBuilder = new StringBuilder("SELECT t.pid FROM Tags as t WHERE ");
+        for (int i = 0; i < tags.length; i++) {
+            queryBuilder.append("t.word = ?");
+            if (i < tags.length - 1) {
+                queryBuilder.append(" OR ");
+            }
+        }
+        queryBuilder.append(" AND t.pid IN "
+                + "(SELECT p.pid FROM Photos as p, Albums as a WHERE p.aid = a.aid AND a.uid = ?)"
+                + "GROUP BY t.pid HAVING COUNT(*) = ?");
+        String query = queryBuilder.toString();
+        PreparedStatement statement = conn.prepareStatement(query);
+        for (int i = 0; i < tags.length; i++) {
+            statement.setString(i + 1, tags[i]);
+        }
+        statement.setInt(tags.length + 1, uid);
+        statement.setInt(tags.length + 2, tags.length);
+        ResultSet rs = statement.executeQuery();
+        List<Integer> pids = new ArrayList<>();
+        while(rs.next()){
+            pids.add(rs.getInt("t.pid"));
+        }
+        return pids;
+    }
+
+    public List<String> getMostPopularTags() throws SQLException {
         String query = "SELECT t.word "
                 + "FROM Tags as t "
                 + "GROUP BY t.word "
                 + "ORDER BY COUNT(*) DESC";
         PreparedStatement statement = conn.prepareStatement(query);
-        return statement.executeQuery();
+        ResultSet rs = statement.executeQuery();
+        List<String> tags = new ArrayList<>();
+        while(rs.next()){
+            tags.add(rs.getString("t.word"));
+        }
+        return tags;
     }
 
-    public List<Integer> getPhotoIdsByTagWord(String tagWord) throws SQLException {
+    //dont think we need this as getPhotoIDsByTag does the same thing
+    /*public List<Integer> getPhotoIdsByTagWord(String tagWord) throws SQLException {
         String query = "SELECT t.pid "
                 + "FROM Tags as t "
                 + "WHERE t.word = ?";
@@ -519,7 +586,7 @@ public class Database {
             pids.add(rs.getInt("pid"));
         }
         return pids;
-    }
+    }*/
 
     /* update.sql */
 

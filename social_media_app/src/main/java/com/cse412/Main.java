@@ -38,7 +38,7 @@ public class Main extends Application {
 
         int curr_user = 1; // we change this to be the logged in user
 
-        /*
+        /* browing_homepage.sql and render_photo.sql
          * this section is for rendering a photo. the variables before the try statement
          * are what
          * you can use in the UI
@@ -155,11 +155,177 @@ public class Main extends Application {
             System.out.println(user.firstName + " " + user.lastName);
         }*/
 
-        /* get photo ids that match the searched */
 
-        // all photos that belong to this tag
+        /* regarding friends */
 
-        /* render album names */
+        //get uids of the user(s) that mmatch the searched name
+        String search_firstname = "Sato";
+        String search_lastname = "Hiroshi";
+        List<Integer> uids_of_searched_name = new ArrayList<>();
+        try{
+            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (Integer user : uids_of_searched_name) {
+            System.out.println(user + " ");
+        }*/
+
+        //get all of this user's friends
+        List<Integer> this_users_friends = new ArrayList<>();
+        try{
+            this_users_friends = db.getAllFriends(curr_user);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (Integer user : this_users_friends) {
+            System.out.println(user + " ");
+        }*/
+
+        //get all users that have this user as a friend
+        List<Integer> friends_of_this_user = new ArrayList<>();
+        try{
+            friends_of_this_user = db.getAllUsersWhoFriendedThisUser(curr_user);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (Integer user : friends_of_this_user) {
+            System.out.println(user + " ");
+        }*/
+
+        //get all friends of this user's friends
+        List<Integer> friends_of_this_users_friends = new ArrayList<>();
+        try{
+            friends_of_this_users_friends = db.getAllFriendsOfFriends(curr_user);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (Integer user : friends_of_this_users_friends) {
+            System.out.print(user + " ");
+        }*/
+        
+
+        /* browsing own profile*/
+
+        List<Album> this_users_albums = new ArrayList<>();
+        try{
+            this_users_albums = db.getAllAlbumsOfLoggedInUser(curr_user);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (Album album : this_users_albums) {
+            System.out.print(album.aid + " ");
+        }*/
+
+        User user_info = new User();
+        try {
+            user_info = db.getAllUserInfo(curr_user);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        /*for (User user : top_ten_users) {
+            System.out.println(user.firstName + " " + user.lastName);
+        }*/
+
+        //retrieving pids in an album
+        int retrieve_pids_from_aid =  5210;
+        List<Integer> pids_in_album = new ArrayList<>();
+        try{
+            pids_in_album = db.getAllPhotosInAnAlbum(retrieve_pids_from_aid);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (Integer pid : pids_in_album) {
+            System.out.print(pid + " ");
+        }*/
+
+        //retrieving all pids belonging to a user
+        List<Integer> all_users_pids = new ArrayList<>();
+        try{
+            all_users_pids = db.getAllPhotosOfLoggedInUser(1700);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (Integer pids : all_users_pids) {
+            System.out.print(pids + " ");
+        }*/
+
+
+
+        /* searching */
+
+        //search by comment
+        String search_comment = "";
+        List<List<Object>> matches = new ArrayList<>();
+        try{
+            matches = db.searchCommentByText(search_comment);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (List<Object> match : matches) {
+            System.out.print("Match: ");
+            for (Object element : match) {
+                System.out.print(element + " ");
+            }
+            System.out.println();
+        }*/
+
+        //search for currently logged in user's photos that have a certain tag
+        String search_my_tag = "best";
+        List<Integer> my_photos_with_tag = new ArrayList<>();
+        try{
+            my_photos_with_tag = db.getOwnPhotoIdsByTag(curr_user, search_my_tag);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (Integer match : my_photos_with_tag) {
+            System.out.print(match + " ");
+        }*/
+
+        //search all photos that have a certain tag
+        String search_all_tag = "";
+        List<Integer> all_photos_with_tag = new ArrayList<>();
+        try{
+            all_photos_with_tag = db.getPhotoIdsByTag(search_all_tag, curr_user);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (Integer match : all_photos_with_tag) {
+            System.out.print(match + " ");
+        }*/
+
+        //search this user's photos by multiple tags
+        String[] search_my_tags = new String[]{"best","light"};
+        List<Integer> my_photos_with_tags = new ArrayList<>();
+        try{
+            my_photos_with_tags = db.getPhotosByMultipleTagsAndUser(search_my_tags, curr_user);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (Integer match : my_photos_with_tags) {
+            System.out.print(match + " ");
+        }*/
+
+        //search all photos (not this user's) by multiple tags
+        String[] search_all_tags = new String[]{"best","light"};
+        List<Integer> all_photos_with_tags = new ArrayList<>();
+        try{
+            all_photos_with_tags = db.getPhotosByMultipleTags(search_all_tags, curr_user);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        /*for (Integer match : all_photos_with_tags) {
+            System.out.print(match + " ");
+        }*/
+
+        //search most popular tags
+        List<String> most_popular_tags = new ArrayList<>();
+        try{
+            most_popular_tags = db.getMostPopularTags();
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
 
         /* you may also like- returns list of pids (non-user posted pids) that have the top tags and how many of the top tags they have */
         List<Pair<Integer,Integer>> top_pics = new ArrayList<>();
