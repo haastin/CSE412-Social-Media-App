@@ -303,9 +303,9 @@ public class Main extends Application {
         }catch(SQLException e){
             e.printStackTrace();
         }
-        for (Friend fids : all_users_friends) {
+        /*for (Friend fids : all_users_friends) {
             System.out.print(fids.fid + " ");
-        }
+        }*/
 
         //all users who have the target user as a friend
         List<Friend> users_who_have_target_user_as_friend = new ArrayList<>();
@@ -315,26 +315,26 @@ public class Main extends Application {
         catch(SQLException e){
             e.printStackTrace();
         }
-        for (Friend fids : users_who_have_target_user_as_friend) {
+        /*for (Friend fids : users_who_have_target_user_as_friend) {
             System.out.print(fids.uid + " ");
-        }
+        }*/
 
 
 
         /* searching */
 
         //search for a user 
-        String search_user_firstName = "";
-        String search_user_lastName = "";
+        String search_user_firstName = "Shiro";
+        String search_user_lastName = "Yoshiro";
         List<User> matched_user = new ArrayList<>();
         try{
             matched_user = db.searchUserByName(search_user_firstName, search_user_lastName);
         }catch(SQLException e){
             e.printStackTrace();
         }
-        for (User match : matched_user) {
+        /*for (User match : matched_user) {
             System.out.print(match.firstName + " " + match.lastName);
-        }
+        }*/
 
         //search by comment
         String search_comment = "";
@@ -434,13 +434,13 @@ public class Main extends Application {
             e.printStackTrace();
         }
 
-        String new_albumName = "";
+        String new_albumName = "miracles";
         try{
             db.createAlbum(curr_user, new_albumName);
         }catch(SQLException e){
             e.printStackTrace();
         }
-
+        
         int pid_commenting_on = 9990;
         String new_comment_text = "";
         try{
@@ -455,7 +455,7 @@ public class Main extends Application {
         }catch(SQLException e){
             e.printStackTrace();
         }
-
+        
         String new_tag_word = "blah";
         int pid_tagging = 9990;
         try{
@@ -475,20 +475,21 @@ public class Main extends Application {
         /* deletion.sql */
 
         //coomented this out because it deletes the test user when trying to test all my functions
-        /*try{
+        /* 
+        try{
         db.deleteUser(curr_user);
         }
         catch(SQLException e){
             e.printStackTrace();
         }
         
-        int deleting_aid = 5210;
+        int deleting_aid = 5239;
         try{
             db.deleteAlbum(deleting_aid, curr_user);
         }catch(SQLException e){
             e.printStackTrace();
         }
-
+        
         int deleting_cid = 0;
         try{
             db.deleteComment(deleting_cid, curr_user);
@@ -519,7 +520,7 @@ public class Main extends Application {
         }*/
 
         /* update.sql */
-        /* 
+         /*
         String update_firstName = "";
         String update_lastName = "";
         String update_gender = "";
