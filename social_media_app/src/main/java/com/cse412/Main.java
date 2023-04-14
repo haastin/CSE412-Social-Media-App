@@ -36,7 +36,51 @@ public class Main extends Application {
 
     public void start(Stage primaryStage) {
 
-        int curr_user = 1; // we change this to be the logged in user
+        /* if a user tries to insert something that already exists, a sql exception will be thrown, and the code in
+         * the catch is executed, so an error box or whatever can be the code in the catch to address that.
+         * 
+         * the variables i created are dummy variables that will be populated with data from the labels, etc. So as long as
+         * the variables are used with the labels, then everything in the DB side should go freely.
+         */
+
+        /* login information */
+        int curr_user = 1700; // we change this to be the logged in user
+        String login_with_email = "";
+        String hashed_password = "";
+        int status = -1;
+        try{
+            status = db.loginUser(login_with_email, hashed_password);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        if(status == -1){ 
+
+        }
+        else{
+            curr_user = status;
+        }
+       
+
+        
+        /* user registers */
+        String firstName = "";
+        String lastName = "";
+        String password_hashed = "";
+        String gender = "";
+        String hometown = "";
+        String email = "another@adu.edu";
+        String dob = "1998-12-31";
+
+        /* check if this email exists */
+        boolean emailExists = true;
+        try{
+            emailExists = db.checkEmailExists(email);
+            if(!emailExists){
+            db.createUser(firstName, lastName, password_hashed, gender, hometown, email, dob);
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
 
         /* browing_homepage.sql and render_photo.sql
          * this section is for rendering a photo. the variables before the try statement
@@ -203,13 +247,15 @@ public class Main extends Application {
         /*for (Integer user : friends_of_this_users_friends) {
             System.out.print(user + " ");
         }*/
-        
 
-        /* browsing own profile*/
 
+        /* browsing a profile*/
+
+        //in the case where you want to view your own profile, you can make the target user uid the current user
+        int target_user_uid = 1700;
         List<Album> this_users_albums = new ArrayList<>();
         try{
-            this_users_albums = db.getAllAlbumsOfLoggedInUser(curr_user);
+            this_users_albums = db.getAllAlbumsOfLoggedInUser(target_user_uid);
         }catch(SQLException e){
             e.printStackTrace();
         }
@@ -219,7 +265,7 @@ public class Main extends Application {
 
         User user_info = new User();
         try {
-            user_info = db.getAllUserInfo(curr_user);
+            user_info = db.getAllUserInfo(target_user_uid);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -242,7 +288,7 @@ public class Main extends Application {
         //retrieving all pids belonging to a user
         List<Integer> all_users_pids = new ArrayList<>();
         try{
-            all_users_pids = db.getAllPhotosOfLoggedInUser(1700);
+            all_users_pids = db.getAllPhotosOfLoggedInUser(target_user_uid);
         }catch(SQLException e){
             e.printStackTrace();
         }
@@ -250,9 +296,45 @@ public class Main extends Application {
             System.out.print(pids + " ");
         }*/
 
+        //retrieve all of a user's friends
+        List<Friend> all_users_friends = new ArrayList<>();
+        try{
+            all_users_friends = db.getAllUsersFriend(target_user_uid);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        for (Friend fids : all_users_friends) {
+            System.out.print(fids.fid + " ");
+        }
+
+        //all users who have the target user as a friend
+        List<Friend> users_who_have_target_user_as_friend = new ArrayList<>();
+        try{
+            users_who_have_target_user_as_friend = db.getUsersWhoHaveTargetUserAsFriend(target_user_uid);
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        for (Friend fids : users_who_have_target_user_as_friend) {
+            System.out.print(fids.uid + " ");
+        }
+
 
 
         /* searching */
+
+        //search for a user 
+        String search_user_firstName = "";
+        String search_user_lastName = "";
+        List<User> matched_user = new ArrayList<>();
+        try{
+            matched_user = db.searchUserByName(search_user_firstName, search_user_lastName);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        for (User match : matched_user) {
+            System.out.print(match.firstName + " " + match.lastName);
+        }
 
         //search by comment
         String search_comment = "";
@@ -338,6 +420,150 @@ public class Main extends Application {
             System.out.println(pic.getKey() + " matches " + pic.getValue() + " tags");
         }       */
 
+        /* creating_entries.sql */
+        /*these vars need to be populated by labels/buttons above the db function calls, besides the holder for retrieved data 
+        (none here since nothing is returned by the db function */
+        /* 
+        int put_in_aid = 5210;
+        String new_caption = "im a gummy bear";
+        String new_url = "resources/com/cse412/test.jpg";
+        try{
+        db.createPhoto(put_in_aid, new_caption, new_url);
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        String new_albumName = "";
+        try{
+            db.createAlbum(curr_user, new_albumName);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        int pid_commenting_on = 9990;
+        String new_comment_text = "";
+        try{
+            db.postComment(pid_commenting_on, curr_user, new_comment_text);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        int pid_liking = 9990;
+        try{
+            db.recordLike(pid_liking, curr_user);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        String new_tag_word = "blah";
+        int pid_tagging = 9990;
+        try{
+            db.createTag(pid_tagging, new_tag_word);
+        } catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        int uid_of_user_you_want_friend = 1700;
+        try{
+            db.recordFriendship(curr_user, uid_of_user_you_want_friend);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }*/
+
+
+        /* deletion.sql */
+
+        //coomented this out because it deletes the test user when trying to test all my functions
+        /*try{
+        db.deleteUser(curr_user);
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        
+        int deleting_aid = 5210;
+        try{
+            db.deleteAlbum(deleting_aid, curr_user);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        int deleting_cid = 0;
+        try{
+            db.deleteComment(deleting_cid, curr_user);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        int unlike_pid = 9990;
+        try{
+            db.deleteLike(curr_user, unlike_pid);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        int unfollow_uid = 1700;
+        try{
+            db.unfollowUser(curr_user, unfollow_uid);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        String delete_tag_word = "";
+        int delete_tag_from_pid = 9990;
+        try{
+            db.deleteTag(delete_tag_from_pid, curr_user, delete_tag_word);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }*/
+
+        /* update.sql */
+        /* 
+        String update_firstName = "";
+        String update_lastName = "";
+        String update_gender = "";
+        String update_hometown = "";
+        String update_dob = ""; //need to enforce (or convert ourselves) that this matches the format of a MySQL DATE type variable
+        try{
+            db.updateUser(curr_user, update_firstName, update_lastName, update_gender, update_hometown, update_dob);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        String new_photo_caption = "";
+        int pid_to_change = 9990;
+        try{
+            db.updatePhoto(curr_user, pid_to_change, new_photo_caption);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        String new_album_name = "";
+        int aid_to_change = 5210;
+        try{
+            db.updateAlbum(curr_user, new_albumName, aid_to_change);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        String old_word = "";
+        String new_word = "";
+        int pid_of_tag = 9990;
+        try{
+            db.updateTag(curr_user, pid_of_tag, old_word, new_word);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        String update_text = "";
+        int change_comment_on_pid = 9990;
+        int change_comment_cid = 1;
+        try{
+            db.updateComment(curr_user, update_text, change_comment_on_pid, change_comment_cid);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }*/
     }
 
     public static void main(String[] args) {

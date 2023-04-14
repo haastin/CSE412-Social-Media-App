@@ -45,7 +45,7 @@ public class Database {
         return pids;
     }
 
-    /* browsing_own_profile.sql */
+    /* browsing_a_profile.sql */
     List<Album> getAllAlbumsOfLoggedInUser(int uid) throws SQLException {
 
         String query = "SELECT aid, albumName, dateCreated FROM Albums as a WHERE a.uid = ?";
@@ -108,6 +108,38 @@ public class Database {
 
         }
         return user;
+    }
+
+    List<Friend> getAllUsersFriend(int uid) throws SQLException{
+        String query = "SELECT fid, uid, whenFriends FROM Friends WHERE uid = ?";
+        PreparedStatement stmt = conn.prepareStatement(query);
+        stmt.setInt(1, uid);
+        ResultSet rs = stmt.executeQuery();
+        List<Friend> friends = new ArrayList<>();
+        while(rs.next()){
+            Friend friend = new Friend();
+            friend.uid = rs.getInt("uid");
+            friend.fid = rs.getInt("fid");
+            friend.whenFriends = rs.getString("whenFriends");
+            friends.add(friend);
+        }
+        return friends;
+    }
+
+    List<Friend> getUsersWhoHaveTargetUserAsFriend(int uid) throws SQLException{
+        String query = "SELECT uid, fid, whenFriends FROM Friends WHERE fid = ?";
+        PreparedStatement stmt = conn.prepareStatement(query);
+        stmt.setInt(1, uid);
+        ResultSet rs = stmt.executeQuery();
+        List<Friend> friends = new ArrayList<>();
+        while(rs.next()){
+            Friend friend = new Friend();
+            friend.uid = rs.getInt("uid");
+            friend.fid = rs.getInt("fid");
+            friend.whenFriends = rs.getString("whenFriends");
+            friends.add(friend);
+        }
+        return friends;
     }
 
     /* contribution_score.sql */
@@ -293,15 +325,15 @@ public class Database {
 
     // Check if email exists in database
     // Return an empty relation if email doesn't exist
-    public int checkEmailExists(String email) throws SQLException {
+    public boolean checkEmailExists(String email) throws SQLException {
         String query = "SELECT u.email FROM Users AS u WHERE u.email = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setString(1, email);
         ResultSet rs = stmt.executeQuery();
         if (rs.next()) {
-            return 0;
+            return true;
         }
-        return 1;
+        return false;
     }
 
     // Create a new user with given user info
@@ -312,8 +344,18 @@ public class Database {
         stmt.setString(1, firstName);
         stmt.setString(2, lastName);
         stmt.setString(3, password);
-        stmt.setString(4, gender);
-        stmt.setString(5, hometown);
+        if(gender.isBlank()){
+            stmt.setNull(4, java.sql.Types.VARCHAR);
+        }
+        else{
+            stmt.setString(4, gender);
+        }
+        if(hometown.isBlank()){
+            stmt.setNull(5, java.sql.Types.VARCHAR);
+        }
+        else{
+            stmt.setString(5, hometown);
+        }
         stmt.setString(6, email);
         stmt.setString(7, dob);
         stmt.executeUpdate();
@@ -385,6 +427,7 @@ public class Database {
         while(rs.next()){
            photo.url = rs.getString("url");
            photo.caption = rs.getString("caption");
+           photo.pid = rs.getInt("pid");
         }
         
         return photo;
@@ -399,12 +442,13 @@ public class Database {
         while(rs.next()){
             user.firstName = rs.getString("firstName");
             user.lastName = rs.getString("lastName");
+            user.uid = rs.getInt("uid");
         }
         return user;
     }
 
     public List<User> fetchPhotoLikers(int photoID) throws SQLException {
-        String sql = "SELECT u.firstName, u.lastName FROM Users AS u WHERE u.uid IN(SELECT l.uid FROM Likes AS l WHERE l.pid = ?)";
+        String sql = "SELECT u.firstName, u.lastName, u.uid FROM Users AS u WHERE u.uid IN(SELECT l.uid FROM Likes AS l WHERE l.pid = ?)";
         PreparedStatement stmt = conn.prepareStatement(sql);
         stmt.setInt(1, photoID);
         ResultSet rs = stmt.executeQuery();
@@ -413,22 +457,25 @@ public class Database {
             User user = new User();
             user.firstName = rs.getString("firstName");
             user.lastName = rs.getString("lastName");
+            user.uid = rs.getInt("uid");
             users.add(user);
         }
         return users;
     }
 
     public List<Pair<String, Comment>> fetchPhotoComments(int photoID) throws SQLException {
-        String sql = "SELECT u.firstName, u.lastName, c.text, c.date FROM Users AS u, Comments AS c WHERE c.pid = ? AND u.uid = c.uid";
+        String sql = "SELECT u.firstName, u.lastName, c.text, c.date, c.cid, c.uid FROM Users AS u, Comments AS c WHERE c.pid = ? AND u.uid = c.uid";
         PreparedStatement stmt = conn.prepareStatement(sql);
         stmt.setInt(1, photoID);
         ResultSet rs = stmt.executeQuery();
         List<Pair<String, Comment>> comments = new ArrayList<>();
         while(rs.next()){
             Comment comment = new Comment();
-            comment.text = rs.getString("text"); 
-            comment.date = rs.getString("date");
-            String commenter = rs.getString("firstName") + " " + rs.getString("lastName");
+            comment.text = rs.getString("c.text"); 
+            comment.date = rs.getString("c.date");
+            comment.cid = rs.getInt("c.cid");
+            comment.uid = rs.getInt("c.uid");
+            String commenter = rs.getString("u.firstName") + " " + rs.getString("u.lastName");
             Pair<String, Comment> full_comment = new Pair<String,Comment>(commenter, comment);
             comments.add(full_comment);
         }
@@ -472,6 +519,23 @@ public class Database {
         }
         return comments;
 
+    }
+
+    public List<User> searchUserByName(String firstName, String lastName) throws SQLException{
+
+        String query = "SELECT * FROM Users as u WHERE u.firstName = ? AND u.lastName = ?";
+        PreparedStatement statement = conn.prepareStatement(query);
+        statement.setString(1, firstName);
+        statement.setString(2, lastName);
+        ResultSet rs = statement.executeQuery();
+        List<User> matching_users = new ArrayList<>();
+        while(rs.next()){
+            User user = new User();
+            user.firstName = rs.getString("firstName");
+            user.lastName = rs.getString("lastName");
+            matching_users.add(user);
+        }
+        return matching_users;
     }
 
     public List<Integer> getPhotoIdsByTag(String tag, int uid) throws SQLException {
@@ -597,11 +661,37 @@ public class Database {
             throws SQLException {
         String query = "UPDATE Users AS u SET firstName = ?, lastName = ?, gender = ?, hometown = ?, dob = ? WHERE u.uid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
-        stmt.setString(1, firstName);
-        stmt.setString(2, lastName);
-        stmt.setString(3, gender);
-        stmt.setString(4, hometown);
-        stmt.setString(5, dob);
+        if(firstName.isBlank()){
+            stmt.setNull(1, java.sql.Types.VARCHAR);
+        }
+        else{
+            stmt.setString(1, firstName);
+        }
+        if(lastName.isBlank()){
+            stmt.setNull(2, java.sql.Types.VARCHAR);
+        }
+        else{
+            stmt.setString(2, lastName);
+        }
+        
+        if(gender.isBlank()){
+            stmt.setNull(3, java.sql.Types.VARCHAR);
+        }
+        else{
+            stmt.setString(3, gender);
+        }
+        if(hometown.isBlank()){
+            stmt.setNull(4, java.sql.Types.VARCHAR);
+        }
+        else{
+            stmt.setString(4, hometown);
+        }
+        if(dob.isBlank()){
+            stmt.setNull(5, java.sql.Types.DATE);
+        }
+        else{
+            stmt.setString(5, dob);
+        }
         stmt.setInt(6, uid);
         stmt.executeUpdate();
     }
@@ -628,23 +718,25 @@ public class Database {
     }
 
     // Update a comment
-    public void updateComment(int uid, String text, int pid) throws SQLException {
-        String query = "UPDATE Comments AS c SET text = ? WHERE c.uid = ? AND c.pid = ?";
+    public void updateComment(int uid, String text, int pid, int cid) throws SQLException {
+        String query = "UPDATE Comments AS c SET text = ? WHERE c.uid = ? AND c.pid = ? AND c.cid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setString(1, text);
         stmt.setInt(2, uid);
         stmt.setInt(3, pid);
+        stmt.setInt(4, cid);
         stmt.executeUpdate();
     }
 
     // Update a tag if you want to change its word; otherwise delete it and/or
     // create a new one
-    public void updateTag(int uid, int pid, String word) throws SQLException {
-        String query = "UPDATE Tags AS t SET word = ? WHERE t.pid = ? AND t.pid IN (SELECT p.pid FROM Photos AS p, Albums AS a WHERE p.aid = a.aid AND a.uid = ?)";
+    public void updateTag(int uid, int pid, String old_word, String new_word) throws SQLException {
+        String query = "UPDATE Tags AS t SET word = ? WHERE t.pid = ? AND t.word = ? AND t.pid IN (SELECT p.pid FROM Photos AS p, Albums AS a WHERE p.aid = a.aid AND a.uid = ?)";
         PreparedStatement stmt = conn.prepareStatement(query);
-        stmt.setString(1, word);
+        stmt.setString(1, new_word);
+        stmt.setString(3, old_word);
         stmt.setInt(2, pid);
-        stmt.setInt(3, uid);
+        stmt.setInt(4, uid);
         stmt.executeUpdate();
     }
 
