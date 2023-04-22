@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
@@ -33,8 +34,54 @@ import java.util.Iterator;
 public class Main extends Application {
 
     private static Database db;
+    int curr_user; // we change this to be the logged in user
+    boolean logged_in;
 
     public void start(Stage primaryStage) {
+        
+        /* create a login page to parse login information given */
+        BorderPane rootPaneLogin = new BorderPane();
+        GridPane centerPaneLogin = new GridPane();
+        centerPaneLogin.setAlignment(Pos.CENTER);
+        centerPaneLogin.setPadding(new Insets(10, 10, 10, 10));   // this is the spacing from the perimeter of the window
+        centerPaneLogin.setHgap(10); // the spacing between objects horizontally
+        centerPaneLogin.setVgap(10);  // the spacing between objects horizontally
+        
+        //Create 3 labels
+  
+        Label Username = new Label("USERNAME");
+        Label Password = new Label("PASSWORD");
+        Label Welcome = new Label("WELCOME TO OUR SOCIAL MEDIA APP");
+        Button login = new Button("Log In");
+        Button register = new Button("Register As New User");
+
+        Welcome.setFont(new Font("Times New Roman", 20));   // double check the font--
+        Welcome.setTextFill(Color.CRIMSON);
+
+        //Create 2 text fields
+    
+        TextField UsernameField = new TextField();
+        TextField PassField = new TextField();
+
+   	    //add the 3 labels and 3 text fields accordingly
+        rootPaneLogin.setCenter(centerPaneLogin);
+        centerPaneLogin.add(Username, 0, 4);     
+        centerPaneLogin.add(UsernameField, 0, 5);
+        centerPaneLogin.add(Password, 0, 6);
+        centerPaneLogin.add(PassField, 0, 7);
+        centerPaneLogin.add(Welcome, 0, 0);
+        centerPaneLogin.add(login, 0, 8);
+        centerPaneLogin.add(register, 0 , 9);
+
+        // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
+
+        // Create a scene and place it in the stage
+    
+        Scene scene1 = new Scene(rootPaneLogin, 700, 600);    // also x and y correlated
+    
+        primaryStage.setTitle("Social Media App"); // Set the stage title
+        primaryStage.setScene(scene1); // Place the scene in the stage
+        primaryStage.show(); // Display the stage
 
         /* if a user tries to insert something that already exists, a sql exception will be thrown, and the code in
          * the catch is executed, so an error box or whatever can be the code in the catch to address that.
@@ -43,44 +90,140 @@ public class Main extends Application {
          * the variables are used with the labels, then everything in the DB side should go freely.
          */
 
-        /* login information */
-        int curr_user = 1700; // we change this to be the logged in user
-        String login_with_email = "";
-        String hashed_password = "";
-        int status = -1;
-        try{
-            status = db.loginUser(login_with_email, hashed_password);
-        }catch(SQLException e){
-            e.printStackTrace();
-        }
-        if(status == -1){ 
+         login.setOnAction(ev -> {
+            
+            /* login information */
+            String login_with_email = UsernameField.getText();
+            String hashed_password = PassField.getText();
+            int status = -1;
 
-        }
-        else{
-            curr_user = status;
-        }
-       
-
-        
-        /* user registers */
-        String firstName = "";
-        String lastName = "";
-        String password_hashed = "";
-        String gender = "";
-        String hometown = "";
-        String email = "another@adu.edu";
-        String dob = "1998-12-31";
-
-        /* check if this email exists */
-        boolean emailExists = true;
-        try{
-            emailExists = db.checkEmailExists(email);
-            if(!emailExists){
-            db.createUser(firstName, lastName, password_hashed, gender, hometown, email, dob);
+            try{
+                status = db.loginUser(login_with_email, hashed_password);
+            }catch(SQLException e){
+                e.printStackTrace();
             }
-        }catch(SQLException e){
-            e.printStackTrace();
-        }
+            if(status == -1){ 
+                
+                // display a messsage that shows that login failed
+                Label loginFail = new Label("Username And/Or Password is Incorrect. Try Again.");
+                loginFail.setTextFill(Color.CRIMSON);
+                centerPaneLogin.add(loginFail, 0, 10);
+                primaryStage.show();
+
+            }
+            else{
+                curr_user = status;
+            }
+
+        });
+        
+        register.setOnAction(ev -> {
+        
+            /* set the stage for registering a new user */
+            BorderPane rootPaneRegister = new BorderPane();
+            GridPane centerPaneRegister = new GridPane();
+            centerPaneRegister.setAlignment(Pos.CENTER);
+            centerPaneRegister.setPadding(new Insets(10, 10, 10, 10));   // this is the spacing from the perimeter of the window
+            centerPaneRegister.setHgap(10); // the spacing between objects horizontally
+            centerPaneRegister.setVgap(10);  // the spacing between objects horizontally
+            
+            //Create 3 labels
+    
+            Label FirstName = new Label("FIRST NAME");
+            Label LastName = new Label("LAST NAME");
+            Label RegisterPassword = new Label("PASSWORD");
+            Label Gender = new Label("GENDER");
+            Label Hometown = new Label("HOMETOWN");
+            Label Email = new Label("EMAIL");
+            Label DOB = new Label("DATE OF BIRTH");
+            Label RegistrationWelcome = new Label("REGISTRATION");
+            Button registerNow = new Button("Register");
+
+            RegistrationWelcome.setFont(new Font("Times New Roman", 20));   // double check the font--
+            RegistrationWelcome.setTextFill(Color.CRIMSON);
+
+            //Create text fields and dropdowns
+        
+            TextField FirstNameField = new TextField();
+            TextField LastNameField = new TextField();
+            TextField RegisterPasswordField = new TextField();
+            ComboBox GenderField = new ComboBox();
+            GenderField.getItems().addAll(
+                "Male",
+                "Female",
+                "Other"
+            );
+            TextField HometownField = new TextField();
+            TextField EmailField = new TextField();
+            TextField DOBField = new TextField();
+
+            //add the labels and text fields accordingly
+            rootPaneRegister.setCenter(centerPaneRegister);
+            centerPaneRegister.add(FirstName, 0, 1);     
+            centerPaneRegister.add(FirstNameField, 0, 2);
+            centerPaneRegister.add(LastName, 0, 3);
+            centerPaneRegister.add(LastNameField, 0, 4);
+            centerPaneRegister.add(RegisterPassword, 0, 5);
+            centerPaneRegister.add(RegisterPasswordField, 0, 6);
+            centerPaneRegister.add(Gender, 0, 7);
+            centerPaneRegister.add(GenderField, 0, 8);
+            centerPaneRegister.add(Hometown, 0, 9);
+            centerPaneRegister.add(HometownField, 0, 10);
+            centerPaneRegister.add(Email, 0, 11);
+            centerPaneRegister.add(EmailField, 0, 12);
+            centerPaneRegister.add(DOB, 0, 13);
+            centerPaneRegister.add(DOBField, 0, 14);
+            centerPaneRegister.add(RegistrationWelcome, 0, 0);
+            centerPaneRegister.add(registerNow, 0, 15);
+
+            // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
+
+            // Create a scene and place it in the stage
+        
+            Scene scene2 = new Scene(rootPaneRegister, 700, 600);    // also x and y correlated
+        
+            primaryStage.setTitle("Social Media App"); // Set the stage title
+            primaryStage.setScene(scene2); // Place the scene in the stage
+            primaryStage.show(); // Display the stage
+            
+            /* if user presses register button, register the user */
+            registerNow.setOnAction(eve -> {
+            
+                /* user registers */
+                String firstName = FirstNameField.getText();
+                String lastName = LastNameField.getText();
+                String password_hashed = RegisterPasswordField.getText();
+                String gender = "";
+                gender += GenderField.getValue();
+
+                // change gender to one character for database
+                if (gender.equals("Male")) {
+                    gender = "M";
+                } else if (gender.equals("Female")) {
+                    gender = "F";
+                } else {
+                    gender = "O";
+                }
+
+                System.out.println(gender);
+                String hometown = HometownField.getText();
+                String email = EmailField.getText();
+                String dob = DOBField.getText();
+
+                /* check if this email exists */
+                boolean emailExists = true;
+                try{
+                    emailExists = db.checkEmailExists(email);
+                    if(!emailExists){
+                    db.createUser(firstName, lastName, password_hashed, gender, hometown, email, dob);
+                    }
+                }catch(SQLException e){
+                    e.printStackTrace();
+                }
+
+            });
+
+        });
 
         /* browing_homepage.sql and render_photo.sql
          * this section is for rendering a photo. the variables before the try statement
