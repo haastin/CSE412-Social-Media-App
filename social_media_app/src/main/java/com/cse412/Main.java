@@ -49,7 +49,7 @@ public class Main extends Application {
         
         //Create 3 labels
   
-        Label Username = new Label("USERNAME");
+        Label EmailLogin = new Label("EMAIL");
         Label Password = new Label("PASSWORD");
         Label Welcome = new Label("WELCOME TO OUR SOCIAL MEDIA APP");
         Button login = new Button("Log In");
@@ -60,13 +60,13 @@ public class Main extends Application {
 
         //Create 2 text fields
     
-        TextField UsernameField = new TextField();
+        TextField EmailLoginField = new TextField();
         TextField PassField = new TextField();
 
    	    //add the 3 labels and 3 text fields accordingly
         rootPaneLogin.setCenter(centerPaneLogin);
-        centerPaneLogin.add(Username, 0, 4);     
-        centerPaneLogin.add(UsernameField, 0, 5);
+        centerPaneLogin.add(EmailLogin, 0, 4);     
+        centerPaneLogin.add(EmailLoginField, 0, 5);
         centerPaneLogin.add(Password, 0, 6);
         centerPaneLogin.add(PassField, 0, 7);
         centerPaneLogin.add(Welcome, 0, 0);
@@ -93,7 +93,7 @@ public class Main extends Application {
          login.setOnAction(ev -> {
             
             /* login information */
-            String login_with_email = UsernameField.getText();
+            String login_with_email = EmailLoginField.getText();
             String hashed_password = PassField.getText();
             int status = -1;
 
@@ -105,7 +105,7 @@ public class Main extends Application {
             if(status == -1){ 
                 
                 // display a messsage that shows that login failed
-                Label loginFail = new Label("Username And/Or Password is Incorrect. Try Again.");
+                Label loginFail = new Label("Email And/Or Password is Incorrect. Try Again.");
                 loginFail.setTextFill(Color.CRIMSON);
                 centerPaneLogin.add(loginFail, 0, 10);
                 primaryStage.show();
@@ -129,13 +129,13 @@ public class Main extends Application {
             
             //Create 3 labels
     
-            Label FirstName = new Label("FIRST NAME");
-            Label LastName = new Label("LAST NAME");
-            Label RegisterPassword = new Label("PASSWORD");
+            Label FirstName = new Label("FIRST NAME (*)");
+            Label LastName = new Label("LAST NAME (*)");
+            Label RegisterPassword = new Label("PASSWORD (*)");
             Label Gender = new Label("GENDER");
             Label Hometown = new Label("HOMETOWN");
-            Label Email = new Label("EMAIL");
-            Label DOB = new Label("DATE OF BIRTH");
+            Label Email = new Label("EMAIL (*)");
+            Label DOB = new Label("DATE OF BIRTH (*) (Format YYYY-MM-DD)");
             Label RegistrationWelcome = new Label("REGISTRATION");
             Button registerNow = new Button("Register");
 
@@ -187,6 +187,9 @@ public class Main extends Application {
             primaryStage.show(); // Display the stage
             
             /* if user presses register button, register the user */
+            Label ErrorMessage = new Label("");
+            ErrorMessage.setTextFill(Color.CRIMSON);
+            centerPaneRegister.add(ErrorMessage, 0, 16);
             registerNow.setOnAction(eve -> {
             
                 /* user registers */
@@ -201,11 +204,12 @@ public class Main extends Application {
                     gender = "M";
                 } else if (gender.equals("Female")) {
                     gender = "F";
-                } else {
+                } else if (gender.equals("Other")) {
                     gender = "O";
+                } else {
+                    gender = "";
                 }
 
-                System.out.println(gender);
                 String hometown = HometownField.getText();
                 String email = EmailField.getText();
                 String dob = DOBField.getText();
@@ -214,11 +218,16 @@ public class Main extends Application {
                 boolean emailExists = true;
                 try{
                     emailExists = db.checkEmailExists(email);
-                    if(!emailExists){
-                    db.createUser(firstName, lastName, password_hashed, gender, hometown, email, dob);
+                    if(!emailExists) {
+                        db.createUser(firstName, lastName, password_hashed, gender, hometown, email, dob);
+                    } else {
+                        
+                        // if email exists, print that email is already in use
+                        ErrorMessage.setText("Email is already in use. Try another email.");
+
                     }
-                }catch(SQLException e){
-                    e.printStackTrace();
+                } catch(SQLException e){
+                    ErrorMessage.setText("Invalid Email and/or Date of Birth Format. Try again.");
                 }
 
             });
