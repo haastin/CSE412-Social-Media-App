@@ -100,7 +100,7 @@ public class Main extends Application {
 	comment.setTextFill(Color.INDIGO);
 
   Random rand = new Random(); 
-  int upperbound = 25;
+  int upperbound = 301;
   int randNum = rand.nextInt(upperbound);
     
   Label numLikes = new Label(randNum + " Likes");
