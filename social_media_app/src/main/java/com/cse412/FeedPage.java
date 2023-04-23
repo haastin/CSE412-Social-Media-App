@@ -52,7 +52,7 @@ public class FeedPage extends Application {
 	
     Label feed = new Label("Feed");
 
-    feed.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 15));   
+    feed.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));   
     feed.setTextFill(Color.HOTPINK);
 
     TextField search = new TextField();
