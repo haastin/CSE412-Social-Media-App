@@ -75,7 +75,7 @@ public class Main extends Application {
     
 	view.setPreserveRatio(true);  */
 	TextField temp = new TextField();
-    temp.setPromptText("Search Here");
+    temp.setPromptText("(Temporary TextField --> In place of picture)");
     temp.setPrefWidth(100);
     temp.setPrefHeight(400);
 
