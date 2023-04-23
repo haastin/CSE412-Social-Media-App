@@ -184,19 +184,19 @@ ImageView view = new ImageView(image);
 
      // primaryStage.setScene(search-scene);    // based on the scene names of the search pg
       
-    })
+    });
     
     clear.setOnAction((ActionEvent g) -> {
 
       primaryStage.setScene(scene2);  // refreshes the page basically
       
-    })
+    });
     
     logOut.setOnAction((ActionEvent g) -> {
 
       //  primaryStage.setScene(welcome-scene);  // based on the scene name of the welcome pg
       
-    })
+    });
     
   }
 
