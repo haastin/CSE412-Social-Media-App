@@ -2,7 +2,6 @@ package com.cse412;
 
 import java.sql.ResultSet;
 
-
 import java.util.Random;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -27,16 +26,14 @@ import javafx.geometry.Orientation;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-//import javafx.io.FileInputStream; // not sure if needed, but for the images
+import java.io.FileInputStream;
 import java.sql.*;
 
 
 
-public class Main extends Application {
+public class FeedPage extends Application {
 
-    //private static Database db;
-
-
+    private static Database db;
 
   public void start(Stage primaryStage) {
 
@@ -55,25 +52,63 @@ public class Main extends Application {
 	
     Label feed = new Label("Feed");
 
-    feed.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 15));   // double check the font--
+    feed.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 15));   
     feed.setTextFill(Color.HOTPINK);
 
     TextField search = new TextField();
     search.setPromptText("Search Here");
     search.setPrefWidth(450);
     search.setPrefHeight(40);
-	  
-//	Image pic = new Image(new FileInputStream("image path"));
-	
-/*	ImageView view = new ImageView(pic);
+
+    /*
+    URL url = getClass().getResource("/drawIcon.png");
+Image image = ImageIO.read(url);
+
+In case you want to create a javafx Image:
+
+Image image = new Image("/drawIcon.png");
+    */
+    
+//=================================================================================
+
+    
+/*   
+  //Passing FileInputStream object as a parameter 
+FileInputStream inputstream = new FileInputStream("C:\\images\\image.jpg"); 
+Image image = new Image(inputstream); 
+         
+//Loading image from URL 
+//Image image = new Image(new FileInputStream("url for the image"));
+
+---------------------------------------------------------------------------------
+  
+  //Creating an image 
+      Image image = new Image(new FileInputStream("path of the image"));  
+      
+      //Setting the image view 
+      ImageView imageView = new ImageView(image); 
+*/
+    
+// path --> CSE412-Social-MediaApp/social_media_app/src/main/resources/com/cse412/primary.fxml
+
+
+String path = "https://www.vecteezy.com/free-vector/cute-smiley-face";
+String pathToOpen = "https://www.vecteezy.com/free-vector/cute-smiley-face";
+// replace the above with pid
+
+Image image = new Image(path);
+ImageView view = new ImageView(image);
 	
 	view.setX(25);		// double check these dimensions
 	view.setY(25);
 	
-	view.setFitHeight(555);
-	view.setFitWidth(600);
+	view.setFitHeight(50);
+	view.setFitWidth(50);
     
-	view.setPreserveRatio(true);  */
+	view.setPreserveRatio(true);    
+
+
+    
 	TextField temp = new TextField();
     temp.setPromptText("(Temporary TextField --> In place of picture)");
     temp.setPrefWidth(100);
@@ -83,20 +118,20 @@ public class Main extends Application {
     searchIt.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
     searchIt.setStyle("-fx-background-color: LIGHTGREEN");
     
-    Button close = new Button("Close Search");
-    close.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-    close.setStyle("-fx-background-color: LIGHTSALMON");
+    Button clear = new Button("Clear Search");
+    clear.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+    clear.setStyle("-fx-background-color: LIGHTSALMON");
 	
-      HBox hBox = new HBox(); 
-	 hBox.setPadding(new Insets(10, 10, 10, 10));
-	  hBox.setSpacing(5);
-        hBox.setAlignment(Pos.CENTER);
-	hBox.getChildren().addAll(search, searchIt, close);
+  HBox hBox = new HBox(); 
+	hBox.setPadding(new Insets(10, 10, 10, 10));
+  hBox.setSpacing(5);
+  hBox.setAlignment(Pos.CENTER);
+	hBox.getChildren().addAll(search, searchIt, clear);
 	  
 	
 	 Label comment = new Label("Comments");
 
-	comment.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));  // double check the font--
+	comment.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));  
 	comment.setTextFill(Color.INDIGO);
 
     Label comment1 = new Label("[Insert Comment1]");
@@ -113,13 +148,16 @@ public class Main extends Application {
     
   Label numLikes = new Label(randNum + " Likes");
 
-	numLikes.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));  // double check the font--
+	numLikes.setFont(Font.font("Verdana", FontPosture.REGULAR, 15)); 
 	numLikes.setTextFill(Color.TEAL);
     
      HBox hBox2 = new HBox(); 
 	 hBox2.setPadding(new Insets(10, 10, 10, 10));
 	  hBox2.setSpacing(5);
+   
         hBox2.setAlignment(Pos.CENTER_RIGHT);
+    hBox2.getChildren().add(view);  // adding image to Hbox 
+
     
      Button logOut = new Button("Log Out");
     logOut.setMaxSize(100.0, 100.0);
@@ -128,25 +166,52 @@ public class Main extends Application {
 	 VBox vBox = new VBox();
 	 vBox.setPadding(new Insets(10, 10, 10, 10));
 	  vBox.setSpacing(5);
-       //vBox.setAlignment(Pos.CENTER);
-	vBox.getChildren().addAll(feed, hBox, temp, numLikes, comment, comment1, comment2, logOut);
-	 
-    rootPane2.setCenter(vBox);
-   // centerPane2.add(vBox, 0, 0);
-    //centerPane2.add(hBox, 0, 1);
-
-    // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
-
-// Create a scene and place it in the stage
+      //vBox.setAlignment(Pos.CENTER);
+	vBox.getChildren().addAll(feed, hBox, hBox2, numLikes, comment, comment1, comment2, logOut);
     
+    rootPane2.setCenter(vBox);
+  
+    // Create a scene and place it in the stage
     Scene scene2 = new Scene(rootPane2, 700, 600);    // also x and y correlated
     
     primaryStage.setTitle("Social Media App"); // Set the stage title
     primaryStage.setScene(scene2); // Place the scene in the stage
     primaryStage.show(); // Display the stage
+
+    // button listeners below
+
+    searchIt.setOnAction((ActionEvent g) -> {
+
+     // primaryStage.setScene(search-scene);    // based on the scene names of the search pg
+      
+    })
+    
+    clear.setOnAction((ActionEvent g) -> {
+
+      primaryStage.setScene(scene2);  // refreshes the page basically
+      
+    })
+    
+    logOut.setOnAction((ActionEvent g) -> {
+
+      //  primaryStage.setScene(welcome-scene);  // based on the scene name of the welcome pg
+      
+    })
+    
   }
 
  public static void main(String[] args) {
+
+    try {
+        db = new Database();
+  
+    }
+    catch(SQLException e){
+
+    }
+    catch(ClassNotFoundException e){
+
+    }
       launch(args);
   }
 }
