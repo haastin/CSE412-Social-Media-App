@@ -99,6 +99,14 @@ public class Main extends Application {
 	comment.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));  // double check the font--
 	comment.setTextFill(Color.INDIGO);
 
+    Label comment1 = new Label("[Insert Comment1]");
+    comment1.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
+    comment1.setTextFill(Color.TRANSPARENT);
+    Label comment2 = new Label("[Insert Comment2]");
+    comment2.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
+    comment2.setTextFill(Color.TRANSPARENT);
+    
+    
   Random rand = new Random(); 
   int upperbound = 301;
   int randNum = rand.nextInt(upperbound);
@@ -121,7 +129,7 @@ public class Main extends Application {
 	 vBox.setPadding(new Insets(10, 10, 10, 10));
 	  vBox.setSpacing(5);
        //vBox.setAlignment(Pos.CENTER);
-	vBox.getChildren().addAll(feed, hBox, temp, comment, numLikes, logOut);
+	vBox.getChildren().addAll(feed, hBox, temp, comment, comment1, comment2, numLikes, logOut);
 	 
     rootPane2.setCenter(vBox);
    // centerPane2.add(vBox, 0, 0);
