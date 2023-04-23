@@ -129,7 +129,7 @@ public class Main extends Application {
 	 vBox.setPadding(new Insets(10, 10, 10, 10));
 	  vBox.setSpacing(5);
        //vBox.setAlignment(Pos.CENTER);
-	vBox.getChildren().addAll(feed, hBox, temp, comment, comment1, comment2, numLikes, logOut);
+	vBox.getChildren().addAll(feed, hBox, temp, numLikes, comment, comment1, comment2, logOut);
 	 
     rootPane2.setCenter(vBox);
    // centerPane2.add(vBox, 0, 0);
