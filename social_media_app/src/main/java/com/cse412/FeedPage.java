@@ -3,6 +3,7 @@ package com.cse412;
 import java.sql.ResultSet;
 
 
+import java.util.Random;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -16,18 +17,24 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.TilePane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Orientation;
 import javafx.scene.paint.Color;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+//import javafx.io.FileInputStream; // not sure if needed, but for the images
 import java.sql.*;
 
 
 
-public class FeedPage extends Application {
+public class Main extends Application {
 
-    private static Database db;
+    //private static Database db;
 
 
 
@@ -40,32 +47,85 @@ public class FeedPage extends Application {
     
     GridPane centerPane2 = new GridPane();
     
-	  centerPane2.setAlignment(Pos.CENTER);   // centered alignment
-    centerPane2.setPadding(new Insets(10, 10, 10, 10));   // this is the spacing from the perimeter of the window
+	centerPane2.setAlignment(Pos.CENTER);   // centered alignment
+    centerPane2.setPadding(new Insets(1, 1, 1, 1));   // this is the spacing from the perimeter of the window
     centerPane2.setHgap(10); // the spacing between objects horizontally
     centerPane2.setVgap(10);  // the spacing between objects horizontally
 
 	
-    Label Feed = new Label("Feed");
+    Label feed = new Label("Feed");
 
-    Feed.setFont(new Font("Times New Roman", 15));   // double check the font--
-    Feed.setTextFill(Color.CRIMSON);
+    feed.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 15));   // double check the font--
+    feed.setTextFill(Color.HOTPINK);
 
-    TextField Search = new TextField();
-    Search.setPromptText("Search Here");
+    TextField search = new TextField();
+    search.setPromptText("Search Here");
+    search.setPrefWidth(450);
+    search.setPrefHeight(40);
 	  
-    Button Close = new Button("Close Search");
-    Close.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+//	Image pic = new Image(new FileInputStream("image path"));
+	
+/*	ImageView view = new ImageView(pic);
+	
+	view.setX(25);		// double check these dimensions
+	view.setY(25);
+	
+	view.setFitHeight(555);
+	view.setFitWidth(600);
+    
+	view.setPreserveRatio(true);  */
+	TextField temp = new TextField();
+    temp.setPromptText("Search Here");
+    temp.setPrefWidth(100);
+    temp.setPrefHeight(400);
+
+    Button searchIt = new Button("Search");
+    searchIt.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+    searchIt.setStyle("-fx-background-color: LIGHTGREEN");
+    
+    Button close = new Button("Close Search");
+    close.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+    close.setStyle("-fx-background-color: LIGHTSALMON");
 	
       HBox hBox = new HBox(); 
-	 hBox.setPadding(new Insets(10, 0, 0, 10));
+	 hBox.setPadding(new Insets(10, 10, 10, 10));
 	  hBox.setSpacing(5);
         hBox.setAlignment(Pos.CENTER);
-	hBox.getChildren().addAll(Search, Close);
+	hBox.getChildren().addAll(search, searchIt, close);
 	  
-    rootPane2.setCenter(centerPane2);
-    centerPane2.add(Feed, 0, 0);
-    centerPane2.add(firstBox, 0, 1);
+	
+	 Label comment = new Label("Comments");
+
+	comment.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));  // double check the font--
+	comment.setTextFill(Color.INDIGO);
+
+  Random rand = new Random(); 
+  int upperbound = 25;
+  int randNum = rand.nextInt(upperbound);
+    
+  Label numLikes = new Label(randNum + " Likes");
+
+	numLikes.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));  // double check the font--
+	numLikes.setTextFill(Color.TEAL);
+    
+     HBox hBox2 = new HBox(); 
+	 hBox2.setPadding(new Insets(10, 10, 10, 10));
+	  hBox2.setSpacing(5);
+        hBox2.setAlignment(Pos.CENTER_RIGHT);
+    
+     Button logOut = new Button("Log Out");
+    logOut.setMaxSize(100.0, 100.0);
+
+    
+	 VBox vBox = new VBox();
+	 vBox.setPadding(new Insets(10, 10, 10, 10));
+	  vBox.setSpacing(5);
+       //vBox.setAlignment(Pos.CENTER);
+	vBox.getChildren().addAll(feed, hBox, temp, comment, numLikes, logOut);
+	 
+    rootPane2.setCenter(vBox);
+   // centerPane2.add(vBox, 0, 0);
+    //centerPane2.add(hBox, 0, 1);
 
     // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
 
@@ -78,18 +138,7 @@ public class FeedPage extends Application {
     primaryStage.show(); // Display the stage
   }
 
-public static void main(String[] args) {
-
-    try{
-        db = new Database();
-  
-    }
-    catch(SQLException e){
-
-    }
-    catch(ClassNotFoundException e){
-
-    }
+ public static void main(String[] args) {
       launch(args);
   }
 }
