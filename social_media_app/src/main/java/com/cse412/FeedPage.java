@@ -46,13 +46,26 @@ public class FeedPage extends Application {
     centerPane2.setVgap(10);  // the spacing between objects horizontally
 
 	
-  //  Label Feed = new Label("Feed");
+    Label Feed = new Label("Feed");
 
-  //  Feed.setFont(new Font("Times New Roman", 20));   // double check the font--
-  //  Feed.setTextFill(Color.CRIMSON);
+    Feed.setFont(new Font("Times New Roman", 15));   // double check the font--
+    Feed.setTextFill(Color.CRIMSON);
 
+    TextField Search = new TextField();
+    Search.setPromptText("Search Here");
+	  
+    Button Close = new Button("Close Search");
+    Close.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+	
+      HBox hBox = new HBox(); 
+	 hBox.setPadding(new Insets(10, 0, 0, 10));
+	  hBox.setSpacing(5);
+        hBox.setAlignment(Pos.CENTER);
+	hBox.getChildren().addAll(Search, Close);
+	  
     rootPane2.setCenter(centerPane2);
-  //  centerPane1.add(Feed, 0, 0);
+    centerPane2.add(Feed, 0, 0);
+    centerPane2.add(firstBox, 0, 1);
 
     // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
 
@@ -60,7 +73,7 @@ public class FeedPage extends Application {
     
     Scene scene2 = new Scene(rootPane2, 700, 600);    // also x and y correlated
     
-    primaryStage.setTitle("Feed"); // Set the stage title
+    primaryStage.setTitle("Social Media App"); // Set the stage title
     primaryStage.setScene(scene2); // Place the scene in the stage
     primaryStage.show(); // Display the stage
   }
