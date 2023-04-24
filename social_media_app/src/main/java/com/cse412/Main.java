@@ -113,6 +113,8 @@ public class Main extends Application {
             }
             else{
                 curr_user = status;
+                primaryStage.setScene(feedScene);
+                //primaryStage.show();
             }
 
         });
