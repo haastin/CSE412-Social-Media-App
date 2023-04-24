@@ -50,16 +50,40 @@ public class FeedPage extends Application {
     centerPane2.setVgap(10);  // the spacing between objects horizontally
 
 	
-    Label feed = new Label("Feed");
+     Label feed = new Label("Feed");
 
     feed.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));   
     feed.setTextFill(Color.HOTPINK);
 
-    TextField search = new TextField();
-    search.setPromptText("Search Here");
-    search.setPrefWidth(450);
-    search.setPrefHeight(40);
 
+    Button ownPhotos = new Button("View Your Photos");
+    ownPhotos.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+    ownPhotos.setStyle("-fx-background-color: TRANSPARENT");
+    
+   TextField search = new TextField();
+ search.setPromptText("Search Here");
+ search.setPrefWidth(450);
+ search.setPrefHeight(40); 
+
+
+  ComboBox suggest = new ComboBox();
+   suggest.getItems().addAll(
+      "Top Ten Users", 
+      "Most Popular Tags", 
+      "Recommending Friends",
+      "You May Also Like");
+    
+ suggest.setPromptText("Suggestions");
+ /* suggest.getEditor().textProperty().addListener(new ChangeListener<String>() {
+
+    @Override
+    public void changed(ObservableValue<? extends String> observable, 
+                                    String oldValue, String newValue) {
+        System.out.println("yuh");
+    }
+    });  */
+    
+    
     /*
     URL url = getClass().getResource("/drawIcon.png");
 Image image = ImageIO.read(url);
@@ -102,8 +126,8 @@ ImageView view = new ImageView(image);
 	view.setX(25);		// double check these dimensions
 	view.setY(25);
 	
-	view.setFitHeight(50);
-	view.setFitWidth(50);
+	view.setFitHeight(100);
+	view.setFitWidth(100);
     
 	view.setPreserveRatio(true);    
 
@@ -115,8 +139,8 @@ ImageView view = new ImageView(image);
     temp.setPrefHeight(400);
 
     Button searchIt = new Button("Search");
-    searchIt.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-    searchIt.setStyle("-fx-background-color: LIGHTGREEN");
+ searchIt.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+ searchIt.setStyle("-fx-background-color: LIGHTGREEN");
     
     Button clear = new Button("Clear Search");
     clear.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -126,7 +150,7 @@ ImageView view = new ImageView(image);
 	hBox.setPadding(new Insets(10, 10, 10, 10));
   hBox.setSpacing(5);
   hBox.setAlignment(Pos.CENTER);
-	hBox.getChildren().addAll(search, searchIt, clear);
+	hBox.getChildren().addAll(suggest, search, searchIt, clear);
 	  
 	
 	 Label comment = new Label("Comments");
@@ -167,7 +191,7 @@ ImageView view = new ImageView(image);
 	 vBox.setPadding(new Insets(10, 10, 10, 10));
 	  vBox.setSpacing(5);
       //vBox.setAlignment(Pos.CENTER);
-	vBox.getChildren().addAll(feed, hBox, hBox2, numLikes, comment, comment1, comment2, logOut);
+	vBox.getChildren().addAll(feed, ownPhotos, hBox, hBox2, numLikes, comment, comment1, comment2, logOut);
     
     rootPane2.setCenter(vBox);
   
@@ -180,9 +204,20 @@ ImageView view = new ImageView(image);
 
     // button listeners below
 
-    searchIt.setOnAction((ActionEvent g) -> {
+    EventHandler<ActionEvent> event =
+                  new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e)
+            {
+                
+            }
+        };
 
-     // primaryStage.setScene(search-scene);    // based on the scene names of the search pg
+
+    suggest.setOnAction(event);
+    
+ searchIt.setOnAction((ActionEvent f) -> {
+
+     // primaryStage.setScen suggest-scene);    // based on the scene names of th suggest pg
       
     });
     
@@ -192,7 +227,7 @@ ImageView view = new ImageView(image);
       
     });
     
-    logOut.setOnAction((ActionEvent g) -> {
+    logOut.setOnAction((ActionEvent h) -> {
 
       //  primaryStage.setScene(welcome-scene);  // based on the scene name of the welcome pg
       
