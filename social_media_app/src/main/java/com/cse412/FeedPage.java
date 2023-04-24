@@ -120,8 +120,8 @@ Image image = new Image(inputstream);
 // path --> CSE412-Social-MediaApp/social_media_app/src/main/resources/com/cse412/primary.fxml
 
 
-String path = "https://www.vecteezy.com/free-vector/cute-smiley-face";
-String pathToOpen = "https://www.vecteezy.com/free-vector/cute-smiley-face";
+String path = url;
+String pathToOpen = url;
 // replace the above with pid
 
 Image image = new Image(path);
