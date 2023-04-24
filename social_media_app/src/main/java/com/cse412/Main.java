@@ -354,20 +354,100 @@ public class Main extends Application {
 
         /* regarding friends */
 
-        //get uids of the user(s) that mmatch the searched name
-        String search_firstname = "Sato";
-        String search_lastname = "Hiroshi";
-        List<Integer> uids_of_searched_name = new ArrayList<>();
-        try{
-            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
-        }catch(SQLException e){
-            e.printStackTrace();
-        }
-        /*for (Integer user : uids_of_searched_name) {
-            System.out.println(user + " ");
-        }*/
+        //get uids of the user(s) that match the searched name
+        //render page for searching for users
+        BorderPane rootPaneSearchUsers = new BorderPane();
+        GridPane centerPaneSearchUsers = new GridPane();
+        centerPaneSearchUsers.setAlignment(Pos.CENTER);
+        centerPaneSearchUsers.setPadding(new Insets(10, 10, 10, 10));   // this is the spacing from the perimeter of the window
+        centerPaneSearchUsers.setHgap(10); // the spacing between objects horizontally
+        centerPaneSearchUsers.setVgap(10);  // the spacing between objects horizontally
+        
+        //Create labels and buttons
+  
+        Label SearchUsersFirstName = new Label("First Name:");
+        Label SearchUsersLastName = new Label("Last Name:");
+        Label SearchUserWelcome = new Label("Find Other Users!");
+        Button SearchUserButton = new Button("Search");
+
+        SearchUserWelcome.setFont(new Font("Times New Roman", 20));   // double check the font
+        SearchUserWelcome.setTextFill(Color.CRIMSON);
+
+        //Create 2 text field
+    
+        TextField SearchUserFirstNameField = new TextField();
+        TextField SearchUserLastNameField = new TextField();
+
+   	    //add the 3 labels and 3 text fields accordingly
+        rootPaneSearchUsers.setCenter(centerPaneSearchUsers);
+        centerPaneSearchUsers.add(SearchUserWelcome, 0, 0);     
+        centerPaneSearchUsers.add(SearchUsersFirstName, 0, 1);
+        centerPaneSearchUsers.add(SearchUsersLastName, 0 , 2);
+        centerPaneSearchUsers.add(SearchUserFirstNameField, 0, 3);
+        centerPaneSearchUsers.add(SearchUserLastNameField, 0, 4);
+        centerPaneSearchUsers.add(SearchUserButton, 0, 5);
+
+        // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
+
+        // Create a scene and place it in the stage
+    
+        Scene scene3 = new Scene(rootPaneSearchUsers, 700, 600);    // also x and y correlated
+    
+        primaryStage.setTitle("Social Media App"); // Set the stage title
+        primaryStage.setScene(scene3); // Place the scene in the stage
+        primaryStage.show(); // Display the stage
+
+        SearchUserButton.setOnAction(ev -> {
+            
+            String search_firstname = SearchUserFirstNameField.getText();
+            String search_lastname = SearchUserLastNameField.getText();
+            List<Integer> uids_of_searched_name = new ArrayList<>();
+            try{
+                uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+            }catch(SQLException e){
+                e.printStackTrace();
+            }
+            /*for (Integer user : uids_of_searched_name) {
+                System.out.println(user + " ");
+            }*/
+
+        });
 
         //get all of this user's friends
+        //render page for seeing user friends
+        BorderPane rootPaneSearchUserFriends = new BorderPane();
+        GridPane centerPaneSearchUserFriends = new GridPane();
+        centerPaneSearchUserFriends.setAlignment(Pos.CENTER);
+        centerPaneSearchUserFriends.setPadding(new Insets(10, 10, 10, 10));   // this is the spacing from the perimeter of the window
+        centerPaneSearchUserFriends.setHgap(10); // the spacing between objects horizontally
+        centerPaneSearchUserFriends.setVgap(10);  // the spacing between objects horizontally
+        
+        //Create labels and buttons
+
+        SearchUserWelcome.setFont(new Font("Times New Roman", 20));   // double check the font
+        SearchUserWelcome.setTextFill(Color.CRIMSON);
+
+        //Create 2 text field
+
+   	    //add the 3 labels and 3 text fields accordingly
+        rootPaneSearchUsers.setCenter(centerPaneSearchUsers);
+        centerPaneSearchUsers.add(SearchUserWelcome, 0, 0);     
+        centerPaneSearchUsers.add(SearchUsersFirstName, 0, 1);
+        centerPaneSearchUsers.add(SearchUsersLastName, 0 , 2);
+        centerPaneSearchUsers.add(SearchUserFirstNameField, 0, 3);
+        centerPaneSearchUsers.add(SearchUserLastNameField, 0, 4);
+        centerPaneSearchUsers.add(SearchUserButton, 0, 5);
+
+        // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
+
+        // Create a scene and place it in the stage
+    
+        Scene sceneSearchUserFriends = new Scene(rootPaneSearchUserFriends, 700, 600);    // also x and y correlated
+    
+        primaryStage.setTitle("Social Media App"); // Set the stage title
+        primaryStage.setScene(sceneSearchUserFriends); // Place the scene in the stage
+        primaryStage.show(); // Display the stage
+        
         List<Integer> this_users_friends = new ArrayList<>();
         try{
             this_users_friends = db.getAllFriends(curr_user);
