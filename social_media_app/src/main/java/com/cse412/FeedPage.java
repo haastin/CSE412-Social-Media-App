@@ -212,7 +212,30 @@ ImageView view = new ImageView(image);
                   new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e)
             {
-                
+                 if(suggest.getValue().toString().equals("Top Ten Users")) {
+
+                      primaryStage.setScene(scene2);    // change to top ten users page
+                  
+                }
+
+
+                else if(suggest.getValue().toString().equals("Most Popular Tags")) {
+
+                      primaryStage.setScene(scene2);    // change to most popular tags page
+                  
+                }
+
+                else if(suggest.getValue().toString().equals("Recommended Friends")) {
+
+                      primaryStage.setScene(scene2);    //  change to recommended friends page
+                  
+                }
+
+                else if(suggest.getValue().toString().equals("You May Also Like")) {
+
+                    primaryStage.setScene(scene2);    // change to you may also like page
+                  
+                }
             }
         };
 
