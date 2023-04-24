@@ -425,29 +425,23 @@ public class Main extends Application {
         centerPaneSearchUserFriends.setVgap(10);  // the spacing between objects horizontally
         
         //Create labels and buttons
-
-        SearchUserWelcome.setFont(new Font("Times New Roman", 20));   // double check the font
-        SearchUserWelcome.setTextFill(Color.CRIMSON);
-
-        //Create 2 text field
+        
+        Label UserFriendWelcome = new Label("Your Friends");
+        UserFriendWelcome.setFont(new Font("Times New Roman", 20));   // double check the font
+        UserFriendWelcome.setTextFill(Color.CRIMSON);
 
    	    //add the 3 labels and 3 text fields accordingly
-        rootPaneSearchUsers.setCenter(centerPaneSearchUsers);
-        centerPaneSearchUsers.add(SearchUserWelcome, 0, 0);     
-        centerPaneSearchUsers.add(SearchUsersFirstName, 0, 1);
-        centerPaneSearchUsers.add(SearchUsersLastName, 0 , 2);
-        centerPaneSearchUsers.add(SearchUserFirstNameField, 0, 3);
-        centerPaneSearchUsers.add(SearchUserLastNameField, 0, 4);
-        centerPaneSearchUsers.add(SearchUserButton, 0, 5);
+        rootPaneSearchUserFriends.setCenter(centerPaneSearchUserFriends);
+        centerPaneSearchUsers.add(UserFriendWelcome, 0, 0);     
 
         // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
 
         // Create a scene and place it in the stage
     
-        Scene sceneSearchUserFriends = new Scene(rootPaneSearchUserFriends, 700, 600);    // also x and y correlated
+        Scene sceneUserFriends = new Scene(rootPaneSearchUserFriends, 700, 600);    // also x and y correlated
     
         primaryStage.setTitle("Social Media App"); // Set the stage title
-        primaryStage.setScene(sceneSearchUserFriends); // Place the scene in the stage
+        primaryStage.setScene(sceneUserFriends); // Place the scene in the stage
         primaryStage.show(); // Display the stage
         
         List<Integer> this_users_friends = new ArrayList<>();
