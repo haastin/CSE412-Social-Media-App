@@ -637,6 +637,14 @@ view.setPreserveRatio(true);
         });
 
         //get all of this user's friends
+        
+        List<Integer> this_users_friends = new ArrayList<>();
+        try{
+            this_users_friends = db.getAllFriends(curr_user);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
         //render page for seeing user friends
         BorderPane rootPaneSearchUserFriends = new BorderPane();
         GridPane centerPaneSearchUserFriends = new GridPane();
@@ -664,18 +672,13 @@ view.setPreserveRatio(true);
         primaryStage.setTitle("Social Media App"); // Set the stage title
         primaryStage.setScene(sceneUserFriends); // Place the scene in the stage
         primaryStage.show(); // Display the stage
-        
-        List<Integer> this_users_friends = new ArrayList<>();
-        try{
-            this_users_friends = db.getAllFriends(curr_user);
-        }catch(SQLException e){
-            e.printStackTrace();
-        }
         /*for (Integer user : this_users_friends) {
             System.out.println(user + " ");
         }*/
 
+
         //get all users that have this user as a friend
+
         List<Integer> friends_of_this_user = new ArrayList<>();
         try{
             friends_of_this_user = db.getAllUsersWhoFriendedThisUser(curr_user);
@@ -685,6 +688,35 @@ view.setPreserveRatio(true);
         /*for (Integer user : friends_of_this_user) {
             System.out.println(user + " ");
         }*/
+
+        //render page for seeing user friends
+
+        BorderPane rootPaneFriendsOfUser = new BorderPane();
+        GridPane centerPaneFriendsOfUser = new GridPane();
+        centerPaneFriendsOfUser.setAlignment(Pos.CENTER);
+        centerPaneFriendsOfUser.setPadding(new Insets(10, 10, 10, 10));   // this is the spacing from the perimeter of the window
+        centerPaneFriendsOfUser.setHgap(10); // the spacing between objects horizontally
+        centerPaneFriendsOfUser.setVgap(10);  // the spacing between objects horizontally
+        
+        //Create labels and buttons
+        
+        Label FriendsOfUserWelcome = new Label("Users who have you as a Friend");
+        FriendsOfUserWelcome.setFont(new Font("Times New Roman", 20));   // double check the font
+        FriendsOfUserWelcome.setTextFill(Color.CRIMSON);
+
+        rootPaneFriendsOfUser.setCenter(centerPaneFriendsOfUser);
+        centerPaneFriendsOfUser.add(UserFriendWelcome, 0, 0);     
+
+        // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
+
+        // Create a scene and place it in the stage
+    
+        Scene sceneFriendsOfUser = new Scene(rootPaneFriendsOfUser, 700, 600);    // also x and y correlated
+    
+        primaryStage.setTitle("Social Media App"); // Set the stage title
+        primaryStage.setScene(sceneFriendsOfUser); // Place the scene in the stage
+        primaryStage.show(); // Display the stage
+
 
         //get all friends of this user's friends
         List<Integer> friends_of_this_users_friends = new ArrayList<>();
@@ -696,6 +728,34 @@ view.setPreserveRatio(true);
         /*for (Integer user : friends_of_this_users_friends) {
             System.out.print(user + " ");
         }*/
+
+        //render page for recommending friends
+        
+        BorderPane rootPaneRecFriends = new BorderPane();
+        GridPane centerPaneRecFriends = new GridPane();
+        centerPaneRecFriends.setAlignment(Pos.CENTER);
+        centerPaneRecFriends.setPadding(new Insets(10, 10, 10, 10));   // this is the spacing from the perimeter of the window
+        centerPaneRecFriends.setHgap(10); // the spacing between objects horizontally
+        centerPaneRecFriends.setVgap(10);  // the spacing between objects horizontally
+        
+        //Create labels and buttons
+        
+        Label RecFriendsWelcome = new Label("Friend Recommendations");
+        RecFriendsWelcome.setFont(new Font("Times New Roman", 20));   // double check the font
+        RecFriendsWelcome.setTextFill(Color.CRIMSON);
+
+        rootPaneRecFriends.setCenter(centerPaneRecFriends);
+        centerPaneRecFriends.add(RecFriendsWelcome, 0, 0);     
+
+        // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
+
+        // Create a scene and place it in the stage
+    
+        Scene sceneRecFriends = new Scene(rootPaneRecFriends, 700, 600);    // also x and y correlated
+    
+        primaryStage.setTitle("Social Media App"); // Set the stage title
+        primaryStage.setScene(sceneRecFriends); // Place the scene in the stage
+        primaryStage.show(); // Display the stage
 
 
         /* browsing a profile*/
