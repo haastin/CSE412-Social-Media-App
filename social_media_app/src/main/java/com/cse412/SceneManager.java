@@ -60,13 +60,13 @@ public class SceneManager {
         this.stage = stage;
     }
 
-    public void switchToLoginFromFeed() {
+    public void switchToLogin() {
         // Switch to scene1
         //Stage stage = (Stage) feedScene.getWindow();
         stage.setScene(loginScene);
     }
 
-    public void switchToFeedFromLogin() {
+    public void switchToFeed() {
         // Switch to scene2
         //Stage stage = (Stage) loginScene.getWindow();
 
@@ -355,7 +355,7 @@ public class SceneManager {
          */
 
         logOut.setOnAction((ActionEvent h) -> {
-            this.switchToLoginFromFeed();
+            this.switchToLogin();
             // primaryStage.setScene(scene1); // based on the scene name of the welcome pg
         });
 

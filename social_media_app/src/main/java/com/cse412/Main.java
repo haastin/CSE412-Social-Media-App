@@ -131,7 +131,7 @@ public class Main extends Application {
             }
             else{
                 curr_user = status;
-                sm.switchToFeedFromLogin();
+                sm.switchToFeed();
                 //primaryStage.setScene(feedScene);
                 //primaryStage.show();
             }
@@ -241,7 +241,7 @@ public class Main extends Application {
                     emailExists = db.checkEmailExists(email);
                     if(!emailExists) {
                         db.createUser(firstName, lastName, password_hashed, gender, hometown, email, dob);
-                        sm.switchToFeedFromLogin();
+                        sm.switchToFeed();
                     } else {
                         
                         // if email exists, print that email is already in use
