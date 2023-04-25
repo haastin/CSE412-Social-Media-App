@@ -49,7 +49,7 @@ import javafx.scene.paint.*;
 import javafx.scene.text.*;
 import java.sql.*;
 import java.util.Random;
-
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -72,6 +72,7 @@ public class SceneManager {
     public Scene userProfileScene;
     public Scene searchCommentsScene;
     public Scene mostPopTagsScene;
+    public Scene searchTagsScene;
     private Stage stage;
 
     public SceneManager(Stage stage) {
@@ -111,11 +112,10 @@ public class SceneManager {
          */
         try {
             List<Integer> pids;
-            if(!user_photos){
-             pids = Main.db.getAllPidsOfUsersNotLoggedIn(Main.curr_user);
-            }
-            else{
-            pids = Main.db.getAllPhotosOfLoggedInUser(Main.curr_user);
+            if (!user_photos) {
+                pids = Main.db.getAllPidsOfUsersNotLoggedIn(Main.curr_user);
+            } else {
+                pids = Main.db.getAllPhotosOfLoggedInUser(Main.curr_user);
             }
             int rows = pids.size();
             Random rando = new Random();
@@ -158,10 +158,9 @@ public class SceneManager {
         feed.setTextFill(Color.HOTPINK);
 
         Button ownPhotos;
-        if(!user_photos){
-        ownPhotos = new Button("View Your Photos");
-        }
-        else{
+        if (!user_photos) {
+            ownPhotos = new Button("View Your Photos");
+        } else {
             ownPhotos = new Button("View All Photos");
         }
         ownPhotos.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -186,10 +185,10 @@ public class SceneManager {
                 "You May Also Like");
 
         suggest.setPromptText("Suggestions");
-       
+
         System.out.println(Main.curr_user);
         System.out.println(url);
-        
+
         InputStream is = Main.class.getClassLoader().getResourceAsStream(url);
         Image image = new Image(is);
 
@@ -217,37 +216,52 @@ public class SceneManager {
         hBox.setAlignment(Pos.CENTER);
         hBox.getChildren().addAll(suggest, search, searchIt, clear);
 
-        Label comment0 = new Label("Comments");
+        ListView<String> commentsListView = new ListView<>();
+        ObservableList<String> commentsList = FXCollections.observableArrayList();
 
-        comment0.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
-        comment0.setTextFill(Color.INDIGO);
+        // Iterate through the comment pairs and add the formatted comments to the list
+        for (Pair<String, Comment> commentPair : comments) {
+            String commenter = commentPair.getKey();
+            String rend_caption = commentPair.getValue().text;
+            String datePosted = commentPair.getValue().date;
 
-        Label comment1 = new Label("");
-        comment1.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
-        comment1.setTextFill(Color.BLACK);
+            String formattedComment = String.format("%s: %s (%s)", commenter, rend_caption, datePosted);
+            commentsList.add(formattedComment);
+        }
 
-        /*
-         * for (i = 0; i < sizeOf(comments); i++) {
-         * comment1.setText(comments[i] + "\n");
-         * }
-         */
-
-        /*
-         * Label comment2 = new Label("[Insert Comment2]");
-         * comment2.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
-         * comment2.setTextFill(Color.TRANSPARENT);
-         */
-
-        /*
-         * Random rand = new Random();
-         * int upperbound = 301;
-         * int randNum = rand.nextInt(upperbound);
-         */
+        commentsListView.setItems(commentsList);
 
         Label numLikes = new Label(total_likes + " Likes");
 
         numLikes.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
         numLikes.setTextFill(Color.TEAL);
+        List<User> likers_copy = new ArrayList<>(likers);
+        // Add an action listener to the label
+        numLikes.setOnMouseClicked(event -> {
+            // Create a dialog for displaying the list of likers
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("List of Likers");
+
+            // Create a list view to display the likers
+            ListView<String> listView = new ListView<>();
+
+            // Map the likers to a list of their first and last names
+            List<String> likerNames = likers_copy.stream().map(liker -> liker.firstName + " " + liker.lastName)
+                    .collect(Collectors.toList());
+
+            // Add the liker names to the list view
+            listView.getItems().addAll(likerNames);
+
+            // Add the list view to the dialog pane
+            dialog.getDialogPane().setContent(listView);
+
+            // Add a button to close the dialog
+            ButtonType closeButton = new ButtonType("Close", ButtonData.CANCEL_CLOSE);
+            dialog.getDialogPane().getButtonTypes().add(closeButton);
+
+            // Show the dialog and wait for the user to close it
+            dialog.showAndWait();
+        });
 
         HBox hBox2 = new HBox();
         hBox2.setPadding(new Insets(10, 10, 10, 10));
@@ -273,14 +287,16 @@ public class SceneManager {
         vBox.setPadding(new Insets(10, 10, 10, 20));
         vBox.setSpacing(5);
         // vBox.setAlignment(Pos.CENTER);
-        vBox.getChildren().addAll(feed, hBox3, hBox, hBox2, numLikes, comment0, comment1);
+        vBox.getChildren().addAll(feed, hBox3, hBox, hBox2, numLikes);
 
-        for (int i = 0; i < comments.size(); i++) {
-            Pair<String, Comment> full_comment = comments.get(i);
-            String comm = full_comment.getKey() + " " + full_comment.getValue().text;
-            vBox.getChildren().add(new Label(comm));
-        }
-
+        /*
+         * for (int i = 0; i < comments.size(); i++) {
+         * Pair<String, Comment> full_comment = comments.get(i);
+         * String comm = full_comment.getKey() + " " + full_comment.getValue().text;
+         * vBox.getChildren().add(new Label(comm));
+         * }
+         */
+        vBox.getChildren().add(commentsListView);
         rootPane2.setCenter(vBox);
 
         // Create a scene and place it in the stage
@@ -328,6 +344,7 @@ public class SceneManager {
 
                 else if (suggest.getValue().toString().equals("Search for Tags")) {
                     stage.setScene(feedScene);
+                    stage.show();
                 }
 
                 else if (suggest.getValue().toString().equals("Search for Comments")) {
@@ -361,11 +378,10 @@ public class SceneManager {
             // suggest pg
         });
 
-        if(!user_photos){
-        ownPhotos.setOnAction((ActionEvent z) ->  this.switchToFeed(true));
-        }
-        else{
-            ownPhotos.setOnAction((ActionEvent z) ->  this.switchToFeed(false));
+        if (!user_photos) {
+            ownPhotos.setOnAction((ActionEvent z) -> this.switchToFeed(true));
+        } else {
+            ownPhotos.setOnAction((ActionEvent z) -> this.switchToFeed(false));
         }
         /*
          * clear.setOnAction((ActionEvent g) -> {
@@ -483,12 +499,11 @@ public class SceneManager {
                         // chosen album
                     }
 
-                    try{
+                    try {
                         Main.db.createPhoto(aid_chosen, up_caption, title);
-                        }
-                        catch(SQLException k){
-                            k.printStackTrace();
-                        }
+                    } catch (SQLException k) {
+                        k.printStackTrace();
+                    }
 
                     try {
                         Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
@@ -504,6 +519,10 @@ public class SceneManager {
         // Add the button to a parent node or scene
 
         stage.setScene(feedScene);
+    }
+
+    void switchToTagSearch() {
+        stage.setScene(searchTagsScene);
     }
 
 }
