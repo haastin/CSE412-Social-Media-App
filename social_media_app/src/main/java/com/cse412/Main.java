@@ -280,7 +280,7 @@ public class Main extends Application {
                 } catch (NoSuchAlgorithmException e) {
                     System.out.println("No Such Algorithm Exception Thrown");
                 }
-
+                System.out.println(password_hashed.length());
                 /* check if this email exists */
                 boolean emailExists = true;
                 try{
@@ -296,6 +296,7 @@ public class Main extends Application {
 
                     }
                 } catch(SQLException e){
+                    e.printStackTrace();
                     ErrorMessage.setText("Invalid Email and/or Date of Birth Format. Try again.");
                 }
 
