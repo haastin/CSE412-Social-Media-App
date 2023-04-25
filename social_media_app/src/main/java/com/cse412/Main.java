@@ -1755,16 +1755,114 @@ public class Main extends Application {
                     
 
 
-                /* you may also like- returns list of pids (non-user posted pids) that have the top tags and how many of the top tags they have */
+            /* you may also like- returns list of pids (non-user posted pids) that have the top tags and how many of the top tags they have */
+
                 List<Pair<Integer,Integer>> top_pics = new ArrayList<>();
                 try{
-                    top_pics = db.getTopTagsForUser(1700);
+                    top_pics = db.getTopTagsForUser(curr_user);
                 }catch(SQLException e){
                     e.printStackTrace();
                 }
-            /*for(Pair<Integer,Integer> pic : top_pics){
-                    System.out.println(pic.getKey() + " matches " + pic.getValue() + " tags");
-                }       */
+
+                BorderPane rootPaneYouMayAlsoLike = new BorderPane();
+                GridPane centerPaneYouMayAlsoLike = new GridPane();
+
+                centerPaneYouMayAlsoLike.setAlignment(Pos.CENTER); // centered alignment
+                centerPaneYouMayAlsoLike.setPadding(new Insets(1, 1, 1, 1)); // this is the spacing from the perimeter of the window
+                centerPaneYouMayAlsoLike.setHgap(10); // the spacing between objects horizontally
+                centerPaneYouMayAlsoLike.setVgap(10); // the spacing between objects horizontally
+
+                Label YouMayAlsoLikeWelcome = new Label("You May Also Like");
+
+                YouMayAlsoLikeWelcome.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
+                YouMayAlsoLikeWelcome.setTextFill(Color.HOTPINK);
+
+                int photoNum = 0;
+
+                String urlYMAL = "";
+                String poster_firstnameYMAL = "";
+                String poster_lastnameYMAL = "";
+                String captionYMAL = "";
+                List<Tag> tagsYMAL = new ArrayList<>();
+                List<Pair<String, Comment>> commentsYMAL = new ArrayList<>();
+
+                List<User> likersYMAL = new ArrayList<>();
+                int total_likesYMAL = 0;
+                User posterYMAL = new User();;
+                Photo picYMAL = new Photo();
+
+                try {
+                    picYMAL = db.fetchPhotoInfo(top_pics.get(photoNum).getKey());
+                    commentsYMAL = Main.db.fetchPhotoComments(top_pics.get(photoNum).getKey());
+                    likersYMAL = Main.db.fetchPhotoLikers(top_pics.get(photoNum).getKey());
+                    tagsYMAL = Main.db.fetchPhotoTags(top_pics.get(photoNum).getKey());
+                    posterYMAL = Main.db.fetchPhotoUser(top_pics.get(photoNum).getKey());
+                } catch (SQLException e) {
+
+                }
+
+                poster_firstnameYMAL = posterYMAL.firstName;
+                poster_lastnameYMAL = posterYMAL.lastName;
+
+                captionYMAL = picYMAL.caption;
+                urlYMAL = picYMAL.url;
+
+                total_likesYMAL = likersYMAL.size();
+                
+                InputStream isYMAL = Main.class.getClassLoader().getResourceAsStream(urlYMAL);
+                Image imageYMAL = new Image(isYMAL);
+
+                ImageView viewYMAL = new ImageView(imageYMAL);
+
+                viewYMAL.setX(25);
+                viewYMAL.setY(25);
+
+                viewYMAL.setFitHeight(100);
+                viewYMAL.setFitWidth(100);
+
+                viewYMAL.setPreserveRatio(true);
+
+                Label comment0YMAL = new Label("Comments");
+
+                comment0YMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+                comment0YMAL.setTextFill(Color.INDIGO);
+
+                Label comment1YMAL = new Label("");
+                comment1YMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
+                comment1YMAL.setTextFill(Color.BLACK);
+                
+                Label numLikesYMAL = new Label(total_likesYMAL + " Likes");  // NOT SURE WHERE TO GET LIKES FROM
+
+                numLikesYMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+                numLikesYMAL.setTextFill(Color.TEAL);
+
+                HBox hBox2YMAL = new HBox();
+                hBox2YMAL.setPadding(new Insets(10, 10, 10, 10));
+                hBox2YMAL.setSpacing(5);
+
+                hBox2YMAL.setAlignment(Pos.CENTER_RIGHT);
+                hBox2YMAL.getChildren().add(viewYMAL);
+
+                Button nextYMAL = new Button("Next pic");
+                nextYMAL.setMaxSize(100.0, 100.0);
+                rootPaneSearchTags.setBottom(nextYMAL);
+
+                VBox vBoxYMAL = new VBox();
+                vBoxYMAL.setPadding(new Insets(10, 10, 10, 20));
+                vBoxYMAL.setSpacing(5);
+                // vBox.setAlignment(Pos.CENTER);
+                vBoxYMAL.getChildren().addAll(hBox2YMAL, numLikesYMAL, comment0YMAL, comment1YMAL);
+
+                for (int p = 0; p < commentsYMAL.size(); p++) {
+                    Pair<String, Comment> full_comment = commentsYMAL.get(p);
+                    String comm = full_comment.getKey() + " " + full_comment.getValue().text;
+                    vBoxYMAL.getChildren().add(new Label(comm));
+                }
+
+                rootPaneYouMayAlsoLike.setCenter(vBoxYMAL);
+
+                Scene YouMayAlsoLikeScene = new Scene(rootPaneYouMayAlsoLike, 700, 600);
+                sm.youmayAlsoLikeScene = YouMayAlsoLikeScene;
 
                 /* creating_entries.sql */
                 /*these vars need to be populated by labels/buttons above the db function calls, besides the holder for retrieved data 
