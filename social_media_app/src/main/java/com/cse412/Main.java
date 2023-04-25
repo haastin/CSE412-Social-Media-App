@@ -302,14 +302,8 @@ public class Main extends Application {
             });
 
         });
-
-        /* switch statement to control which scene is being displayed based on combobox from SceneManager */
-        while (true && logged_in) {
-            
-            switch (sm.getSceneNum()) {
                 
                 /* top ten users */
-                case 1:
                 
                     /* list of top then users */
                     List<Pair<Integer, Integer>> all_num_photos = new ArrayList<>();
@@ -391,14 +385,11 @@ public class Main extends Application {
 
                     // set scene
                     Scene SceneTopTen = new Scene(rootPaneTopTen, 700, 600);
-                    primaryStage.setTitle("Social Media App");
-                    primaryStage.setScene(SceneTopTen);
-                    primaryStage.show();
+                    sm.topTenUsersScene = SceneTopTen;
 
                     // go back to main feedpage if go back is pressed
                     GoBackTopTen.setOnAction (ev -> {
 
-                        sm.setSceneNum(0);
                         sm.switchToFeed();
 
                     });
@@ -407,7 +398,6 @@ public class Main extends Application {
                 /* regarding friends */
 
                 /* search for users */
-                case 2:
                 
                     //get uids of the user(s) that match the searched name
                     //render page for searching for users
@@ -450,9 +440,7 @@ public class Main extends Application {
                 
                     Scene scene3 = new Scene(rootPaneSearchUsers, 700, 600);    // also x and y correlated
                 
-                    primaryStage.setTitle("Social Media App"); // Set the stage title
-                    primaryStage.setScene(scene3); // Place the scene in the stage
-                    primaryStage.show(); // Display the stage
+                    sm.searchForUsersScene = scene3;
 
                     SearchUserButton.setOnAction(ev -> {
                         
@@ -490,14 +478,12 @@ public class Main extends Application {
                     // go back to feedPage
                     GoBackSearchUsers.setOnAction(ev -> {
 
-                        sm.setSceneNum(0);
                         sm.switchToFeed();
 
                     });
 
                 
-                /* get user friends and display */
-                case 3: 
+                /* get user friends and display */ 
                 
                     //render page for seeing user friends
                     BorderPane rootPaneSearchUserFriends = new BorderPane();
@@ -553,19 +539,15 @@ public class Main extends Application {
 
                     }
 
-                    primaryStage.setTitle("Social Media App"); // Set the stage title
-                    primaryStage.setScene(sceneUserFriends); // Place the scene in the stage
-                    primaryStage.show(); // Display the stage
+                    sm.displayUserFriendsScene = sceneUserFriends;
 
                     UserFriendsGoBack.setOnAction(ev -> {
 
-                        sm.setSceneNum(0);
                         sm.switchToFeed();
 
                     });
 
                 /* display all users who have current user as friend */
-                case 4:
                     
                     // render a page to show friends of user
                     BorderPane rootPaneFriendsOfUser = new BorderPane();
@@ -616,20 +598,16 @@ public class Main extends Application {
 
                     }
 
-                    primaryStage.setTitle("Social Media App");
-                    primaryStage.setScene(FriendsOfUsersScene);
-                    primaryStage.show();
+                    sm.displayFriendsOfUsersScene = FriendsOfUsersScene;
 
                     FriendsOfUserGoBack.setOnAction(ev -> {
 
-                        sm.setSceneNum(0);
                         sm.switchToFeed();
 
                     });
 
 
                 /* Friend Recommendations */
-                case 5:
 
                     // render a page to show friend recommendations
                     BorderPane rootPaneFriendRec = new BorderPane();
@@ -681,20 +659,16 @@ public class Main extends Application {
 
                     }
 
-                    primaryStage.setTitle("Social Media App");
-                    primaryStage.setScene(FriendsRecScene);
-                    primaryStage.show();
+                    sm.friendRecScene = FriendsRecScene;
 
                     FriendsRecGoBack.setOnAction(ev -> {
 
-                        sm.setSceneNum(0);
                         sm.switchToFeed();
 
                     });
 
 
                 /* browsing your profile */
-                case 6: 
 
                     // render a page for viewing your own profile
                     BorderPane rootPaneUserPage = new BorderPane();
@@ -768,9 +742,7 @@ public class Main extends Application {
                     centerPaneUserPage.add(new Label("Date of Birth: " + user_info.dob), 0, 6);
 
                     // display page
-                    primaryStage.setTitle("Social Media App");
-                    primaryStage.setScene(UserPageScene);
-                    primaryStage.show();
+                    sm.userProfileScene = UserPageScene;
 
                     //retrieving pids in an album
                     int retrieve_pids_from_aid =  5210;
@@ -924,7 +896,6 @@ public class Main extends Application {
                             }
                             
                             if (success) {
-                                sm.setSceneNum(0);
                                 sm.switchToFeed();
                             }
 
@@ -935,7 +906,6 @@ public class Main extends Application {
                     // go back to feedpage if goback button is pressed
                     UserPageGoBack.setOnAction(ev -> {
 
-                        sm.setSceneNum(0);
                         sm.switchToFeed();
 
                     });
@@ -985,7 +955,6 @@ public class Main extends Application {
                 }*/
 
                 /* searching for specific comments left by users */
-                case 7:
 
                     // render page to display comments searched by user
                     BorderPane rootPaneSearchComments = new BorderPane();
@@ -1013,6 +982,11 @@ public class Main extends Application {
                     centerPaneSearchComments.add(CommentToSearch, 1, 1);
                     centerPaneSearchComments.add(SearchForCommentButton, 0, 2);
                     centerPaneSearchComments.add(SearchCommentsGoBack, 0, 13);
+
+                    // create scene
+                    Scene SearchCommentsScene = new Scene(rootPaneSearchComments, 700, 600);
+
+                    sm.searchCommentsScene = SearchCommentsScene;
 
                     //search by comment when search button is pressed
                     SearchForCommentButton.setOnAction(ev -> {
@@ -1043,7 +1017,6 @@ public class Main extends Application {
                     // go back to feedpage if goback button is pressed
                     SearchCommentsGoBack.setOnAction(ev -> {
 
-                        sm.setSceneNum(0);
                         sm.switchToFeed();
 
                     });
@@ -1098,7 +1071,6 @@ public class Main extends Application {
                 }*/
 
                 /* most popular tags */
-                case 8:
 
                     // render a page to show friend recommendations
                     BorderPane rootPaneMostPopTags = new BorderPane();
@@ -1161,16 +1133,14 @@ public class Main extends Application {
 
                     }
 
-                    primaryStage.setTitle("Social Media App");
-                    primaryStage.setScene(MostPopTagsScene);
-                    primaryStage.show();
+                    sm.mostPopTagsScene = MostPopTagsScene;
 
                     MostPopTagsGoBack.setOnAction(ev -> {
 
-                       sm.setSceneNum(0);
                        sm.switchToFeed(); 
 
                     });
+                    
 
 
                 /* you may also like- returns list of pids (non-user posted pids) that have the top tags and how many of the top tags they have */
@@ -1329,11 +1299,10 @@ public class Main extends Application {
                 }catch(SQLException e){
                     e.printStackTrace();
                 }*/
-                }
-            
             }
-    }
-
+            
+        
+    
 
     public static void main(String[] args) {
         try {
