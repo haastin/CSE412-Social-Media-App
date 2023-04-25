@@ -54,21 +54,18 @@ public class SceneManager {
 
     public Scene loginScene;
     public Scene feedScene;
+    public Scene topTenUsersScene;
+    public Scene searchForUsersScene;
+    public Scene displayUserFriendsScene;
+    public Scene displayFriendsOfUsersScene;
+    public Scene friendRecScene;
+    public Scene userProfileScene;
+    public Scene searchCommentsScene;
+    public Scene mostPopTagsScene;
     private Stage stage;
-    private int sceneNum = 0; 
 
     public SceneManager(Stage stage){
         this.stage = stage;
-    }
-
-    // return scene number to be used
-    public int getSceneNum() {
-        return sceneNum;
-    }
-
-    // set scene number to be used
-    public void setSceneNum(int newSceneNum) {
-        sceneNum = newSceneNum;
     }
 
     public void switchToLogin() {
@@ -336,53 +333,52 @@ public class SceneManager {
             public void handle(ActionEvent e) {
 
                 if (suggest.getValue().toString().equals("Top Ten Users")) {
-                    stage.setScene(feedScene); // change to top ten users page
-                    sceneNum = 1;
+                    stage.setScene(topTenUsersScene); // change to top ten users page
+                    stage.show();
                 }
 
                 else if (suggest.getValue().toString().equals("Search for Users")) {
-                    stage.setScene(feedScene);
-                    sceneNum = 2;
+                    stage.setScene(searchForUsersScene);
+                    stage.show();
                 }
 
                 else if (suggest.getValue().toString().equals("Your Friends")) {
-                    stage.setScene(feedScene);
-                    sceneNum = 3;
+                    stage.setScene(displayUserFriendsScene);
+                    stage.show();
+
                 }
 
                 else if (suggest.getValue().toString().equals("Users Who Have You As A Friend")) {
-                    stage.setScene(feedScene);
-                    sceneNum = 4;
+                    stage.setScene(displayFriendsOfUsersScene);
+                    stage.show();
                 }
 
                 else if (suggest.getValue().toString().equals("Recommended Friends")) {
-                    stage.setScene(feedScene); // change to recommended friends page
-                    sceneNum = 5;
+                    stage.setScene(friendRecScene); // change to recommended friends page
+                    stage.show();
                 }
 
                 else if (suggest.getValue().toString().equals("Search for Tags")) {
                     stage.setScene(feedScene);
-                    sceneNum = 6;
                 }
 
                 else if (suggest.getValue().toString().equals("Search for Comments")) {
-                    stage.setScene(feedScene);
-                    sceneNum = 7;
+                    stage.setScene(searchCommentsScene);
+                    stage.show();
                 }
 
                 else if (suggest.getValue().toString().equals("Most Popular Tags")) {
-                    stage.setScene(feedScene); // change to most popular tags page
-                    sceneNum = 8;
+                    stage.setScene(mostPopTagsScene); // change to most popular tags page
+                    stage.show();
                 }
 
                 else if (suggest.getValue().toString().equals("Your Page")) {
-                    stage.setScene(feedScene);
-                    sceneNum = 9;
+                    stage.setScene(userProfileScene);
+                    stage.show();
                 }
 
                 else if (suggest.getValue().toString().equals("You May Also Like")) {
                     stage.setScene(feedScene); // change to you may also like page
-                    sceneNum = 10;
                 }
 
 
