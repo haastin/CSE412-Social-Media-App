@@ -660,9 +660,9 @@ public class Database {
     // just passed in)
     public void updateUser(int uid, String firstName, String lastName, String hash_pass, String gender, String hometown, String dob)
             throws SQLException {
-        String query = "UPDATE Users AS u SET firstName = ?, lastName = ?, password = ?, dob = ?";
+        String query = "UPDATE Users AS u SET firstName = ?, lastName = ?, dob = ?";
 
-        int added_stuff = 5; 
+        int added_stuff = 4; 
         if(gender != null){
             query = query + ", gender = ?";
         }
@@ -670,13 +670,17 @@ public class Database {
         if(hometown != null){
             query = query + ", hometown = ?";
         }
+
+        if(!hash_pass.equals("********")){
+            System.out.println(" insert pass " + hash_pass);
+            query = query + ", password = ?";
+        }
       
         query = query +  " WHERE u.uid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setString(1, firstName);
         stmt.setString(2, lastName);
-        stmt.setString(3, hash_pass);
-        stmt.setString(4, dob);
+        stmt.setString(3, dob);
         if(gender != null){
             stmt.setString(added_stuff, gender);
             added_stuff++;
@@ -685,6 +689,11 @@ public class Database {
             stmt.setString(added_stuff, hometown);
             added_stuff++;
         }
+        if(!hash_pass.equals("********")){
+            stmt.setString(added_stuff, hash_pass);
+            added_stuff++;
+        }
+
         stmt.setInt(added_stuff, uid);
         stmt.executeUpdate();
     }

@@ -42,7 +42,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws NoSuchAlgorithmException {
 
         sm = new SceneManager(primaryStage);
-        
+
         
         /* create a login page to parse login information given */
 
@@ -275,6 +275,7 @@ public class Main extends Application {
                     emailExists = db.checkEmailExists(email);
                     if(!emailExists) {
                         db.createUser(firstName, lastName, password_hashed, gender, hometown, email, dob);
+                        curr_user = db.loginUser(email, password_hashed);
                         sm.switchToFeed(false);
                         logged_in = true;
                     } else {
