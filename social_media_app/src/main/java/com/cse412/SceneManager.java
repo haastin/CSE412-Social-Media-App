@@ -1,7 +1,9 @@
 package com.cse412;
 
 import javafx.scene.Scene;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -18,6 +20,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.TilePane;
@@ -31,8 +34,14 @@ import javafx.geometry.Orientation;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import javafx.collections.*;
 import javafx.scene.text.Text.*;
@@ -44,6 +53,7 @@ import java.util.Random;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,19 +74,19 @@ public class SceneManager {
     public Scene mostPopTagsScene;
     private Stage stage;
 
-    public SceneManager(Stage stage){
+    public SceneManager(Stage stage) {
         this.stage = stage;
     }
 
     public void switchToLogin() {
         // Switch to scene1
-        //Stage stage = (Stage) feedScene.getWindow();
+        // Stage stage = (Stage) feedScene.getWindow();
         stage.setScene(loginScene);
     }
 
     public void switchToFeed() {
         // Switch to scene2
-        //Stage stage = (Stage) loginScene.getWindow();
+        // Stage stage = (Stage) loginScene.getWindow();
 
         /*
          * browing_homepage.sql and render_photo.sql
@@ -127,26 +137,6 @@ public class SceneManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        /*
-         * System.out.println("URL: " + curr_user);
-         * System.out.println("Poster first name: " + poster_firstname);
-         * System.out.println("Poster last name: " + poster_lastname);
-         * System.out.println("Caption: " + caption);
-         * System.out.println("Tags:");
-         * for (Tag tag : tags) {
-         * System.out.println("- " + tag.word);
-         * }
-         * System.out.println("Comments:");
-         * for (Pair<String, Comment> comment : comments) {
-         * System.out.println("- " + comment.getKey() + ": " + comment.getValue().text +
-         * comment.getValue().date);
-         * }
-         * System.out.println("Likes:");
-         * for (User liker : likers) {
-         * System.out.println("- " + liker.firstName + " " + liker.lastName);
-         * }
-         * System.out.println("Total likes: " + total_likes);
-         */
 
         BorderPane rootPane2 = new BorderPane();
         GridPane centerPane2 = new GridPane();
@@ -331,7 +321,9 @@ public class SceneManager {
         stage.setScene(feedScene); // Place the scene in the stage
         stage.show(); // Display the stage
 
-        next.setOnAction((ActionEvent h) -> { this.switchToFeed();});
+        next.setOnAction((ActionEvent h) -> {
+            this.switchToFeed();
+        });
 
         // comboBox listeners below
 
@@ -387,7 +379,6 @@ public class SceneManager {
                     stage.setScene(feedScene); // change to you may also like page
                 }
 
-
             }
         };
 
@@ -414,6 +405,129 @@ public class SceneManager {
             this.switchToLogin();
             // primaryStage.setScene(scene1); // based on the scene name of the welcome pg
         });
+
+        // Create a Button object
+        Button button = new Button("Select Image");
+        rootPane2.setRight(button);
+
+        // Set the action for the button
+        button.setOnAction(e -> {
+            // Create a FileChooser object
+            FileChooser fileChooser = new FileChooser();
+
+            // Set the title of the dialog box
+            fileChooser.setTitle("Select Image");
+
+            // Set the initial directory for the dialog box
+            fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+
+            // Set the file extensions that are allowed to be selected
+            fileChooser.getExtensionFilters().addAll(
+                    new ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"));
+
+            // Open the dialog box and wait for the user to select a file
+            File selectedFile = fileChooser.showOpenDialog(stage);
+
+            // Define the destination directory for the file
+            File destDir = new File("src/main/java");
+
+            // If the destination directory doesn't exist, create it
+            if (!destDir.exists()) {
+                destDir.mkdirs();
+            }
+
+            // Get the title of the selected file
+            String title = selectedFile.getName();
+
+            // Create a Path object for the destination directory and the selected file
+            Path destPath = destDir.toPath().resolve(title);
+            Path srcPath = selectedFile.toPath();
+
+            // Copy the selected file to the destination directory
+
+            // If a file was selected, do something with it
+            if (selectedFile != null) {
+                // Upload the file to your app or display it in a ImageView, for example:
+                Image up_image = new Image(selectedFile.toURI().toString());
+                ImageView imageView = new ImageView(up_image);
+                int target_user_uid = Main.curr_user;
+                List<Album> this_users_albums = new ArrayList<>();
+                try {
+                    this_users_albums = Main.db.getAllAlbumsOfLoggedInUser(target_user_uid);
+                } catch (SQLException q) {
+                    q.printStackTrace();
+                }
+
+                List<Album> albums = new ArrayList<>(this_users_albums);
+                int aid_chosen = 0;
+                String up_caption = "";
+
+                // Create a dialog for choosing an album
+                Dialog<Album> dialog = new Dialog<>();
+                dialog.setTitle("Choose Album");
+
+                // Set the buttons
+                List<ButtonType> albumButtons = new ArrayList<>();
+                for (Album album : this_users_albums) {
+                    albumButtons.add(new ButtonType(album.albumName, ButtonData.LEFT));
+                }
+                dialog.getDialogPane().getButtonTypes().addAll(albumButtons);
+                dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL);
+
+                // Set the result converter
+                dialog.setResultConverter(dialogButton -> {
+                    if (dialogButton == ButtonType.CANCEL) {
+                        return null;
+                    } else {
+                        // Get the index of the selected album button
+                        int index = dialog.getDialogPane().getButtonTypes().indexOf(dialogButton);
+
+                        // Get the selected album
+                        return albums.get(index);
+                    }
+                });
+
+                // Show the dialog and wait for the user to choose an album
+                Optional<Album> result = dialog.showAndWait();
+
+                // Set the aid_chosen variable if an album was chosen
+                if (result.isPresent()) {
+                    Album chosenAlbum = result.get();
+                    aid_chosen = chosenAlbum.aid;
+
+                    // Create a dialog for entering a caption
+                    TextInputDialog captionDialog = new TextInputDialog();
+                    captionDialog.setTitle("Enter Caption");
+                    captionDialog.setHeaderText("Enter a caption for your photo:");
+                    captionDialog.setContentText("Caption:");
+
+                    // Show the dialog and wait for the user to input a caption
+                    Optional<String> captionResult = captionDialog.showAndWait();
+                    if (captionResult.isPresent()) {
+                        up_caption = captionResult.get();
+                        // Do something with the caption, such as storing it with the photo in the
+                        // chosen album
+                    }
+
+                    try{
+                        Main.db.createPhoto(aid_chosen, up_caption, title);
+                        }
+                        catch(SQLException k){
+                            k.printStackTrace();
+                        }
+
+                    try {
+                        Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                // Add the ImageView to a parent node or scene
+            }
+
+        });
+
+        // Add the button to a parent node or scene
 
         stage.setScene(feedScene);
     }
