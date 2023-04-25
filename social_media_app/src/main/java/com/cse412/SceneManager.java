@@ -885,7 +885,7 @@ public class SceneManager {
                             String hometown = HometownFieldChangeInfo.getText();
                             String dob = DOBFieldChangeInfo.getText();
                             String password_hashed = "";
-
+                            System.out.println(firstName);
                             // hash the password given
                             try {
 
@@ -909,8 +909,9 @@ public class SceneManager {
                             // try updating user info
                             boolean success = true;
                             try {
-                                Main.db.updateUser(Main.curr_user, firstName, lastName, gender, hometown, dob);
+                                Main.db.updateUser(Main.curr_user, firstName, lastName, password_hashed, gender, hometown, dob);
                             } catch (SQLException e) {
+                                e.printStackTrace();
                                 ErrorMessageChangeInfo.setText("Invalid Email and/or Date of Birth Format. Try again.");
                                 success = false;
                             }

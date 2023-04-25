@@ -658,42 +658,34 @@ public class Database {
     // Update user info (given logged in user's uid what fields they want to change
     // (not all fields may be changed by a user, in which case the old values are
     // just passed in)
-    public void updateUser(int uid, String firstName, String lastName, String gender, String hometown, String dob)
+    public void updateUser(int uid, String firstName, String lastName, String hash_pass, String gender, String hometown, String dob)
             throws SQLException {
-        String query = "UPDATE Users AS u SET firstName = ?, lastName = ?, gender = ?, hometown = ?, dob = ? WHERE u.uid = ?";
+        String query = "UPDATE Users AS u SET firstName = ?, lastName = ?, password = ?, dob = ?";
+
+        int added_stuff = 5; 
+        if(gender != null){
+            query = query + ", gender = ?";
+        }
+
+        if(hometown != null){
+            query = query + ", hometown = ?";
+        }
+      
+        query = query +  " WHERE u.uid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
-        if(firstName.isBlank()){
-            stmt.setNull(1, java.sql.Types.VARCHAR);
+        stmt.setString(1, firstName);
+        stmt.setString(2, lastName);
+        stmt.setString(3, hash_pass);
+        stmt.setString(4, dob);
+        if(gender != null){
+            stmt.setString(added_stuff, gender);
+            added_stuff++;
         }
-        else{
-            stmt.setString(1, firstName);
+        if(hometown != null){
+            stmt.setString(added_stuff, hometown);
+            added_stuff++;
         }
-        if(lastName.isBlank()){
-            stmt.setNull(2, java.sql.Types.VARCHAR);
-        }
-        else{
-            stmt.setString(2, lastName);
-        }
-        
-        if(gender.isBlank()){
-            stmt.setNull(3, java.sql.Types.VARCHAR);
-        }
-        else{
-            stmt.setString(3, gender);
-        }
-        if(hometown.isBlank()){
-            stmt.setNull(4, java.sql.Types.VARCHAR);
-        }
-        else{
-            stmt.setString(4, hometown);
-        }
-        if(dob.isBlank()){
-            stmt.setNull(5, java.sql.Types.DATE);
-        }
-        else{
-            stmt.setString(5, dob);
-        }
-        stmt.setInt(6, uid);
+        stmt.setInt(added_stuff, uid);
         stmt.executeUpdate();
     }
 
