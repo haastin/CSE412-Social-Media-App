@@ -105,6 +105,7 @@ public class Database {
             user.gender = rs.getString("gender");
             user.hashPass = rs.getString("password");
             user.hometown = rs.getString("hometown");
+            user.uid = uid;
 
         }
         return user;

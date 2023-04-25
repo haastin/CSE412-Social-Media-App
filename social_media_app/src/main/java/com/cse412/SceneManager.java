@@ -4,61 +4,41 @@ import javafx.scene.Scene;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.stage.Stage;
 import javafx.util.Pair;
-import javafx.scene.Scene;
-import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.TilePane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.geometry.Orientation;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import javafx.collections.*;
-import javafx.scene.text.Text.*;
-import javafx.scene.paint.*;
-import javafx.scene.text.*;
 import java.sql.*;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
 import java.util.Optional;
-import java.util.PriorityQueue;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 
 public class SceneManager {
 
@@ -80,15 +60,12 @@ public class SceneManager {
     }
 
     public void switchToLogin() {
-        // Switch to scene1
-        // Stage stage = (Stage) feedScene.getWindow();
+        
         stage.setScene(loginScene);
     }
 
     public void switchToFeed(boolean user_photos) {
-        // Switch to scene2
-        // Stage stage = (Stage) loginScene.getWindow();
-
+       
         /*
          * browing_homepage.sql and render_photo.sql
          * this section is for rendering a photo. the variables before the try statement
@@ -327,23 +304,20 @@ public class SceneManager {
                 }
 
                 else if (suggest.getValue().toString().equals("Your Friends")) {
-                    stage.setScene(displayUserFriendsScene);
-                    stage.show();
+                    switchToUserFriends();
 
                 }
 
                 else if (suggest.getValue().toString().equals("Users Who Have You As A Friend")) {
-                    stage.setScene(displayFriendsOfUsersScene);
-                    stage.show();
+                    switchTodisplayFriendsOfUsers();
                 }
 
                 else if (suggest.getValue().toString().equals("Recommended Friends")) {
-                    stage.setScene(friendRecScene); // change to recommended friends page
-                    stage.show();
+                    switchToRecommendFriends();
                 }
 
                 else if (suggest.getValue().toString().equals("Search for Tags")) {
-                    stage.setScene(feedScene);
+                    stage.setScene(searchTagsScene);
                     stage.show();
                 }
 
@@ -357,9 +331,8 @@ public class SceneManager {
                     stage.show();
                 }
 
-                else if (suggest.getValue().toString().equals("Your Page")) {
-                    stage.setScene(userProfileScene);
-                    stage.show();
+                else if (suggest.getValue().toString().equals("Edit Your Page")) {
+                   switchToOwnPage();
                 }
 
                 else if (suggest.getValue().toString().equals("You May Also Like")) {
@@ -523,6 +496,442 @@ public class SceneManager {
 
     void switchToTagSearch() {
         stage.setScene(searchTagsScene);
+    }
+
+    void switchToUserFriends(){
+        BorderPane rootPaneSearchUserFriends = new BorderPane();
+                    GridPane centerPaneSearchUserFriends = new GridPane();
+                    centerPaneSearchUserFriends.setAlignment(Pos.CENTER);
+                    centerPaneSearchUserFriends.setPadding(new Insets(10, 10, 10, 10));   // this is the spacing from the perimeter of the window
+                    centerPaneSearchUserFriends.setHgap(10); // the spacing between objects horizontally
+                    centerPaneSearchUserFriends.setVgap(10);  // the spacing between objects horizontally
+                    
+                    //Create labels and buttons
+                    
+                    Label UserFriendWelcome = new Label("Your Friends");
+                    Button UserFriendsGoBack = new Button("Go Back"); 
+                    UserFriendWelcome.setFont(new Font("Times New Roman", 20));   // double check the font
+                    UserFriendWelcome.setTextFill(Color.CRIMSON);
+
+                    //add the 3 labels and 3 text fields accordingly
+                    rootPaneSearchUserFriends.setCenter(centerPaneSearchUserFriends);
+                    centerPaneSearchUserFriends.add(UserFriendWelcome, 0, 0);     
+                    centerPaneSearchUserFriends.add(UserFriendsGoBack, 0, 11);
+
+                    // it's like x and y coordinates, but use the window dimensions to kind of see how big a unit is
+
+                    // Create a scene and place it in the stage
+                
+                    Scene sceneUserFriends = new Scene(rootPaneSearchUserFriends, 700, 600);    // also x and y correlated
+
+                    List<Integer> this_users_friends = new ArrayList<>();
+                    try{
+                        this_users_friends = Main.db.getAllFriends(Main.curr_user);
+                    }catch(SQLException e){
+                        e.printStackTrace();
+                    }
+                    System.out.println(this_users_friends.size());
+                    // put 10 friends on display
+                    int i = 1;
+                    for (Integer user : this_users_friends) {
+                        System.out.println(user);
+                        User u = null;
+                        try {
+                            u = Main.db.getAllUserInfo(user);
+                        } catch (SQLException e) {
+
+                        }
+                        centerPaneSearchUserFriends.add(new Label(u.firstName), 0, i);
+                        centerPaneSearchUserFriends.add(new Label(u.lastName), 1, i);
+                        i++;
+
+                        if (i >= 11) {
+                            break;
+                        }
+
+                    }
+
+                    Main.sm.displayUserFriendsScene = sceneUserFriends;
+
+                    UserFriendsGoBack.setOnAction(ev -> {
+
+                        Main.sm.switchToFeed(false);
+
+                    });
+                    stage.setScene(sceneUserFriends);
+    }
+
+    void switchTodisplayFriendsOfUsers(){
+
+        /* display all users who have current user as friend */
+                    
+                    // render a page to show friends of user
+                    BorderPane rootPaneFriendsOfUser = new BorderPane();
+                    GridPane centerPaneFriendsOfUser = new GridPane();
+                    centerPaneFriendsOfUser.setAlignment(Pos.CENTER);
+                    centerPaneFriendsOfUser.setPadding(new Insets(10, 10, 10, 10));
+                    centerPaneFriendsOfUser.setHgap(10);
+                    centerPaneFriendsOfUser.setVgap(10);
+
+                    // create labels and buttons
+                    Label FriendsOfUsersWelcome = new Label("Users Who Have You As A Friend");
+                    Button FriendsOfUserGoBack = new Button("Go Back");
+                    FriendsOfUsersWelcome.setFont(new Font("Times New Roman", 20));
+                    FriendsOfUsersWelcome.setTextFill(Color.CRIMSON);
+
+                    // add to centerpane
+                    rootPaneFriendsOfUser.setCenter(centerPaneFriendsOfUser);
+                    centerPaneFriendsOfUser.add(FriendsOfUsersWelcome, 0, 0);
+                    centerPaneFriendsOfUser.add(FriendsOfUserGoBack, 0, 11);
+
+                    Scene FriendsOfUsersScene = new Scene(rootPaneFriendsOfUser, 700, 600);
+
+                    //get all users that have this user as a friend
+                    List<Integer> friends_of_this_user = new ArrayList<>();
+                    try{
+                        friends_of_this_user = Main.db.getAllUsersWhoFriendedThisUser(Main.curr_user);
+                    }catch(SQLException e){
+                        e.printStackTrace();
+                    }
+
+                    // put friends of user on pane
+                    int i = 1;
+                    for (Integer user : friends_of_this_user) {
+                        
+                        User u = null;
+                        try {
+                            u = Main.db.getAllUserInfo(user);
+                        } catch (SQLException e) {
+
+                        }
+                        centerPaneFriendsOfUser.add(new Label(u.firstName), 0, i);
+                        centerPaneFriendsOfUser.add(new Label(u.lastName), 1, i);
+                        i++;
+
+                        if (i >= 11) {
+                            break;
+                        }
+
+                    }
+
+                    Main.sm.displayFriendsOfUsersScene = FriendsOfUsersScene;
+
+                    FriendsOfUserGoBack.setOnAction(ev -> {
+
+                        Main.sm.switchToFeed(false);
+
+                    });
+
+        stage.setScene(displayFriendsOfUsersScene);
+    }
+
+    void switchToRecommendFriends(){
+
+        /* Friend Recommendations */
+
+                    // render a page to show friend recommendations
+                    BorderPane rootPaneFriendRec = new BorderPane();
+                    GridPane centerPaneFriendRec = new GridPane();
+                    centerPaneFriendRec.setAlignment(Pos.CENTER);
+                    centerPaneFriendRec.setPadding(new Insets(10, 10, 10, 10));
+                    centerPaneFriendRec.setHgap(10);
+                    centerPaneFriendRec.setVgap(10);
+
+                    // create labels and buttons
+                    Label FriendsRecWelcome = new Label("Friend Recommendations");
+                    Button FriendsRecGoBack = new Button("Go Back");
+                    FriendsRecWelcome.setFont(new Font("Times New Roman", 20));
+                    FriendsRecWelcome.setTextFill(Color.CRIMSON);
+
+                    // add to centerpane
+                    rootPaneFriendRec.setCenter(centerPaneFriendRec);
+                    centerPaneFriendRec.add(FriendsRecWelcome, 0, 0);
+                    centerPaneFriendRec.add(FriendsRecGoBack, 0, 11);
+
+                    Scene FriendsRecScene = new Scene(rootPaneFriendRec, 700, 600);
+
+
+                    //get all friends of this user's friends
+                    List<Integer> friends_of_this_users_friends = new ArrayList<>();
+                    try{
+                        friends_of_this_users_friends = Main.db.getAllFriendsOfFriends(Main.curr_user);
+                    }catch(SQLException e){
+                        e.printStackTrace();
+                    }
+
+                    // add friend recommendations to pane
+                    int i = 1;
+                    for (Integer user : friends_of_this_users_friends) {
+                        
+                        User u = null;
+                        try {
+                            u = Main.db.getAllUserInfo(user);
+                        } catch (SQLException e) {
+
+                        }
+                        centerPaneFriendRec.add(new Label(u.firstName), 0, i);
+                        centerPaneFriendRec.add(new Label(u.lastName), 1, i);
+                        i++;
+
+                        if (i >= 11) {
+                            break;
+                        }
+
+                    }
+
+                    Main.sm.friendRecScene = FriendsRecScene;
+
+                    FriendsRecGoBack.setOnAction(ev -> {
+
+                        Main.sm.switchToFeed(false);
+
+                    });
+                    stage.setScene(FriendsRecScene);
+    }
+
+    void switchToOwnPage(){
+
+        BorderPane rootPaneUserPage = new BorderPane();
+                    GridPane centerPaneUserPage = new GridPane();
+
+                    centerPaneUserPage.setAlignment(Pos.CENTER);
+                    centerPaneUserPage.setPadding(new Insets(1, 1, 1, 1));
+                    centerPaneUserPage.setHgap(10);
+                    centerPaneUserPage.setVgap(10);
+
+                    // create labels and buttons
+                    Label YourPageWelcome = new Label("Your Page");
+                    YourPageWelcome.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
+                    YourPageWelcome.setTextFill(Color.HOTPINK);
+                    Button UserPageGoBack = new Button("Go Back");
+                    Button ChangeUserInfo = new Button("Change User Info");     
+
+                    // add labels and such to panes
+                    rootPaneUserPage.setCenter(centerPaneUserPage);
+                    centerPaneUserPage.add(YourPageWelcome, 0, 0);
+                    centerPaneUserPage.add(UserPageGoBack, 0, 17);
+                    centerPaneUserPage.add(ChangeUserInfo, 0, 18);
+                    
+                    // create scene
+                    Scene UserPageScene = new Scene(rootPaneUserPage, 700, 600);
+                    
+                    //in the case where you want to view your own profile, you can make the target user uid the current user
+                    int target_user_uid = Main.curr_user;
+                    List<Album> this_users_albums = new ArrayList<>();
+                    try{
+                        this_users_albums = Main.db.getAllAlbumsOfLoggedInUser(target_user_uid);
+                    }catch(SQLException e){
+                        e.printStackTrace();
+                    }
+
+                    // put album names onto page
+                    int i = 7;
+                    for (Album album : this_users_albums) {
+                        
+                        centerPaneUserPage.add(new Label(album.albumName), 0, i);
+                        i++;
+
+                        if (i >= 17) {
+                            break;
+                        }
+
+                    }
+
+                    // put user info on pane
+                    User user_info = new User();
+                    try {
+                        user_info = Main.db.getAllUserInfo(target_user_uid);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
+                    // get all the info from the user
+                    String userFirstName = user_info.firstName;
+                    String userLastName = user_info.lastName;
+                    String userEmail = user_info.email;
+                    String userGender = user_info.gender;
+                    String userHometown = user_info.hometown;
+                    String userDOB = user_info.dob;
+                    
+                    // add user info to centerPane
+                    centerPaneUserPage.add(new Label("First Name: " + user_info.firstName), 0, 1);
+                    centerPaneUserPage.add(new Label("Last Name: " + user_info.lastName), 0, 2);
+                    centerPaneUserPage.add(new Label("Email: " + user_info.email), 0, 3);
+                    centerPaneUserPage.add(new Label("Gender: " + user_info.gender), 0, 4);
+                    centerPaneUserPage.add(new Label("Hometown: " + user_info.hometown), 0, 5);
+                    centerPaneUserPage.add(new Label("Date of Birth: " + user_info.dob), 0, 6);
+
+                    // display page
+                    Main.sm.userProfileScene = UserPageScene;
+
+                    //retrieving pids in an album
+                    int retrieve_pids_from_aid =  5210;
+                    List<Integer> pids_in_album = new ArrayList<>();
+                    try{
+                        pids_in_album = Main.db.getAllPhotosInAnAlbum(retrieve_pids_from_aid);
+                    }catch(SQLException e){
+                        e.printStackTrace();
+                    }
+                    /*for (Integer pid : pids_in_album) {
+                        System.out.print(pid + " ");
+                    }*/
+
+                    //retrieving all pids belonging to a user
+                    List<Integer> all_users_pids = new ArrayList<>();
+                    try{
+                        all_users_pids = Main.db.getAllPhotosOfLoggedInUser(target_user_uid);
+                    }catch(SQLException e){
+                        e.printStackTrace();
+                    }
+                    /*for (Integer pids : all_users_pids) {
+                        System.out.print(pids + " ");
+                    }*/
+
+                    // let the user change their info if they press the changeinfo button
+                    ChangeUserInfo.setOnAction(ev -> {
+
+                        // create a new scene where the user can change their info
+                        // should look similar to the registration page
+                        BorderPane rootPaneChangeInfo = new BorderPane();
+                        GridPane centerPaneChangeInfo = new GridPane();
+                        centerPaneChangeInfo.setAlignment(Pos.CENTER);
+                        centerPaneChangeInfo.setPadding(new Insets(10, 10, 10, 10));   // this is the spacing from the perimeter of the window
+                        centerPaneChangeInfo.setHgap(10); // the spacing between objects horizontally
+                        centerPaneChangeInfo.setVgap(10);  // the spacing between objects horizontally
+                        
+                        //Create 3 labels
+                
+                        Label FirstNameChangeInfo = new Label("FIRST NAME (*)");
+                        Label LastNameChangeInfo = new Label("LAST NAME (*)");
+                        Label PasswordChangeInfo = new Label("PASSWORD (*)");
+                        Label GenderChangeInfo = new Label("GENDER");
+                        Label HometownChangeInfo = new Label("HOMETOWN");
+                        Label DOBChangeInfo = new Label("DATE OF BIRTH (*) (Format YYYY-MM-DD)");
+                        Label ChangeInfoWelcome = new Label("Change User Info");
+                        Button ChangeInfoButton = new Button("Set Changes");
+
+                        ChangeInfoWelcome.setFont(new Font("Times New Roman", 20));   // double check the font--
+                        ChangeInfoWelcome.setTextFill(Color.CRIMSON);
+
+                        //Create text fields and dropdowns
+                    
+                        TextField FirstNameFieldChangeInfo = new TextField();
+                        FirstNameFieldChangeInfo.setText(userFirstName);
+                        TextField LastNameFieldChangeInfo = new TextField();
+                        LastNameFieldChangeInfo.setText(userLastName);
+                        TextField PasswordChangeInfoField = new TextField();
+                        PasswordChangeInfoField.setText("********");
+                        ComboBox GenderFieldChangeInfo = new ComboBox();
+                        GenderFieldChangeInfo.getItems().addAll(
+                            "Male",
+                            "Female",
+                            "Other"
+                        );
+                        TextField HometownFieldChangeInfo = new TextField();
+                        HometownFieldChangeInfo.setText(userHometown);
+                        TextField DOBFieldChangeInfo = new TextField();
+                        DOBFieldChangeInfo.setText(userDOB);
+
+                        //add the labels and text fields accordingly
+                        rootPaneChangeInfo.setCenter(centerPaneChangeInfo);
+                        centerPaneChangeInfo.add(FirstNameChangeInfo, 0, 1);     
+                        centerPaneChangeInfo.add(FirstNameFieldChangeInfo, 0, 2);
+                        centerPaneChangeInfo.add(LastNameChangeInfo, 0, 3);
+                        centerPaneChangeInfo.add(LastNameFieldChangeInfo, 0, 4);
+                        centerPaneChangeInfo.add(PasswordChangeInfo, 0, 5);
+                        centerPaneChangeInfo.add(PasswordChangeInfoField, 0, 6);
+                        centerPaneChangeInfo.add(GenderChangeInfo, 0, 7);
+                        centerPaneChangeInfo.add(GenderFieldChangeInfo, 0, 8);
+                        centerPaneChangeInfo.add(HometownChangeInfo, 0, 9);
+                        centerPaneChangeInfo.add(HometownFieldChangeInfo, 0, 10);
+                        centerPaneChangeInfo.add(DOBChangeInfo, 0, 11);
+                        centerPaneChangeInfo.add(DOBFieldChangeInfo, 0, 12);
+                        centerPaneChangeInfo.add(ChangeInfoWelcome, 0, 0);
+                        centerPaneChangeInfo.add(ChangeInfoButton, 0, 13);
+
+                        // Create a scene and place it in the stage
+                    
+                        Scene sceneChangeInfo = new Scene(rootPaneChangeInfo, 700, 600);    // also x and y correlated
+                    
+                        stage.setTitle("Social Media App"); // Set the stage title
+                        stage.setScene(sceneChangeInfo); // Place the scene in the stage
+                        stage.show(); // Display the stage
+                        
+                        /* if user presses change info button, change info for the user */
+                        Label ErrorMessageChangeInfo = new Label("");
+                        ErrorMessageChangeInfo.setTextFill(Color.CRIMSON);
+                        centerPaneChangeInfo.add(ErrorMessageChangeInfo, 0, 14);
+                        
+                        ChangeInfoButton.setOnAction(eve -> {
+                        
+                            /* user changes info */
+                            String firstName = FirstNameFieldChangeInfo.getText();
+                            String lastName = LastNameFieldChangeInfo.getText();
+                            String password_unhashed = PasswordChangeInfoField.getText();
+                            String gender = "";
+                            gender += GenderFieldChangeInfo.getValue();
+
+                            // change gender to one character for database
+                            if (gender.equals("Male")) {
+                                gender = "M";
+                            } else if (gender.equals("Female")) {
+                                gender = "F";
+                            } else if (gender.equals("Other")) {
+                                gender = "O";
+                            } else {
+                                gender = "";
+                            }
+
+                            String hometown = HometownFieldChangeInfo.getText();
+                            String dob = DOBFieldChangeInfo.getText();
+                            String password_hashed = "";
+
+                            // hash the password given
+                            try {
+
+                                MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                                byte[] encodedHash = digest.digest(password_unhashed.getBytes());
+                                StringBuilder hexString = new StringBuilder();
+                                for (int j = 0; j < encodedHash.length; j++) {
+                                    String hex = Integer.toHexString(0xff & encodedHash[j]);
+                                    if (hex.length() == 1) {
+                                        hexString.append('0');
+                                    }
+                                    hexString.append(hex);
+                                }
+
+                                password_hashed = hexString.toString();
+                            
+                            } catch (NoSuchAlgorithmException e) {
+                                System.out.println("No Such Algorithm Exception Thrown");
+                            }
+
+                            // try updating user info
+                            boolean success = true;
+                            try {
+                                Main.db.updateUser(Main.curr_user, firstName, lastName, gender, hometown, dob);
+                            } catch (SQLException e) {
+                                ErrorMessageChangeInfo.setText("Invalid Email and/or Date of Birth Format. Try again.");
+                                success = false;
+                            }
+                            
+                            if (success) {
+                                Main.sm.switchToFeed(false);
+                            }
+
+                        });
+
+                    });
+                    
+                    // go back to feedpage if goback button is pressed
+                    UserPageGoBack.setOnAction(ev -> {
+
+                        Main.sm.switchToFeed(false);
+
+                    });
+
+                    stage.setScene(userProfileScene);
+                    stage.show();
     }
 
 }
