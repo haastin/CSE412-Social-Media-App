@@ -56,6 +56,8 @@ public class SceneManager {
     public Scene searchTagsScene;
     private Stage stage;
     private Scene youmayAlsoLikeScene;
+    private Scene pics_same_tag;
+    private Scene pics_mutliple_tag;
 
     public SceneManager(Stage stage) {
         this.stage = stage;
@@ -151,6 +153,7 @@ public class SceneManager {
         search.setPrefHeight(40);
 
         ComboBox suggest = new ComboBox();
+        suggest.setId("suggest");
         suggest.getItems().addAll(
                 "Top Ten Users",
                 "Most Popular Tags",
@@ -255,7 +258,7 @@ public class SceneManager {
         hBox3.setPadding(new Insets(10, 10, 10, 10));
         hBox3.setSpacing(20);
         hBox3.setAlignment(Pos.CENTER);
-        hBox3.getChildren().addAll(ownPhotos, suggest ,logOut); // adding image to Hbox
+        hBox3.getChildren().addAll(ownPhotos, suggest, logOut); // adding image to Hbox
 
         VBox vBox = new VBox();
         vBox.setPadding(new Insets(10, 10, 10, 20));
@@ -291,9 +294,9 @@ public class SceneManager {
 
             // If the user entered a caption, add it to the comments list
             result.ifPresent(new_caption -> {
-                try{
+                try {
                     Main.db.postComment(this_pic_pid, Main.curr_user, new_caption);
-                }catch(SQLException e){
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
 
@@ -304,7 +307,7 @@ public class SceneManager {
         VBox tagsSection = new VBox();
         tagsSection.setSpacing(10);
         tagsSection.setPadding(new Insets(10));
-        
+
         Label tags_title = new Label("Tags");
 
         tags_title.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
@@ -315,7 +318,7 @@ public class SceneManager {
         for (Tag tag : tags) {
             Button tagButton = new Button(tag.word);
             tagButton.setOnAction(event -> {
-                switchToTagSearch();
+                switchToTagSearch(false, tag.word);
             });
             tagsSection.getChildren().add(tagButton);
         }
@@ -385,8 +388,7 @@ public class SceneManager {
                 }
 
                 else if (suggest.getValue().toString().equals("Search for Tags")) {
-                    stage.setScene(searchTagsScene);
-                    stage.show();
+                    switchToMultipleTagSearchBasePage();
                 }
 
                 else if (suggest.getValue().toString().equals("Search for Comments")) {
@@ -551,8 +553,663 @@ public class SceneManager {
         stage.setScene(feedScene);
     }
 
+    void switchToMultipleTagSearchBasePage() {
+
+        BorderPane rootPaneSearchTags = new BorderPane();
+        GridPane centerPaneSearchTags = new GridPane();
+
+        centerPaneSearchTags.setAlignment(Pos.CENTER); // centered alignment
+        centerPaneSearchTags.setPadding(new Insets(1, 1, 1, 1)); // this is the spacing from the perimeter of the window
+        centerPaneSearchTags.setHgap(10); // the spacing between objects horizontally
+        centerPaneSearchTags.setVgap(10); // the spacing between objects horizontally
+
+        Label TagSearch = new Label("Filter Photos via Tag");
+        Label TagSearchDirections = new Label("Separate tags by space as so: red blue green yellow orange");
+        TagSearch.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
+        TagSearch.setTextFill(Color.HOTPINK);
+
+        Button TagSearchButton = new Button("Search");
+        Button OwnTagPhotos = new Button("View Only Your Photos Via Tag");
+        Button TagSearchGoBack = new Button("Go Back");
+        TextField TagSearchField = new TextField();
+
+        // if someone clicked on a tag, fill the tag search bar with the tag
+
+        // set scene
+        rootPaneSearchTags.setCenter(centerPaneSearchTags);
+        centerPaneSearchTags.add(TagSearch, 0, 0);
+        centerPaneSearchTags.add(TagSearchDirections, 0, 1);
+        centerPaneSearchTags.add(TagSearchButton, 0, 3);
+        centerPaneSearchTags.add(OwnTagPhotos, 0, 4);
+        centerPaneSearchTags.add(TagSearchGoBack, 0, 5);
+        centerPaneSearchTags.add(TagSearchField, 0, 2);
+
+        Scene SearchTagScene = new Scene(rootPaneSearchTags, 700, 600);
+        Main.sm.searchTagsScene = SearchTagScene;
+
+        List<String> tags_to_search = new ArrayList<>();
+        int photoToGetOthers = 0;
+        int photoToGetOwn = 0;
+        boolean showingOwnPhotos = false;
+
+
+        OwnTagPhotos.setOnAction(ev -> {
+
+            tags_to_search.clear();
+
+            String tagsFieldResult = TagSearchField.getText();
+            int n = 0;
+            for (int m = 0; m < tagsFieldResult.length(); m++) {
+    
+                if (tagsFieldResult.substring(m, m + 1).equals(" ")) {
+                    tags_to_search.add(tagsFieldResult.substring(n, m));
+                    n = m + 1;
+                } else if (m >= tagsFieldResult.length() - 1) {
+                    tags_to_search.add(tagsFieldResult.substring(n, m + 1));
+                }
+    
+            }
+            String[] search_all_tags = new String[tags_to_search.size()];
+            int x = 0;
+            for (String tag : tags_to_search) {
+                search_all_tags[x] = tag;
+                x++;
+            }
+
+            try {
+
+                List<Integer> all_photos_with_tags = Main.db.getPhotosByMultipleTagsAndUser(search_all_tags, Main.curr_user);
+                System.out.println(all_photos_with_tags.size());
+                if (all_photos_with_tags.size() > 0) {
+                    Main.sm.switchToMultipleTagSearch(true, all_photos_with_tags);
+                }
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        });
+
+        TagSearchButton.setOnAction(ev -> {
+
+            tags_to_search.clear();
+
+            String tagsFieldResult = TagSearchField.getText();
+            int n = 0;
+            for (int m = 0; m < tagsFieldResult.length(); m++) {
+    
+                if (tagsFieldResult.substring(m, m + 1).equals(" ")) {
+                    tags_to_search.add(tagsFieldResult.substring(n, m));
+                    n = m + 1;
+                } else if (m >= tagsFieldResult.length() - 1) {
+                    tags_to_search.add(tagsFieldResult.substring(n, m + 1));
+                }
+    
+            }
+            String[] search_all_tags = new String[tags_to_search.size()];
+            int x = 0;
+            for (String tag : tags_to_search) {
+                search_all_tags[x] = tag;
+                x++;
+            }
+
+            try {
+
+                List<Integer> all_photos_with_tags = Main.db.getPhotosByMultipleTags(search_all_tags, Main.curr_user);
+                if (all_photos_with_tags.size() > 0) {
+                    Main.sm.switchToMultipleTagSearch(false, all_photos_with_tags);
+                }
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        // if go back button pressed, go back to feed
+        TagSearchGoBack.setOnAction(ev -> {
+
+            Main.sm.switchToFeed(false);
+
+        });
+
+        stage.setScene(SearchTagScene);
+    }
+
+    void switchToMultipleTagSearch(boolean user_photos, List<Integer> all_photos_with_tags) {
+
+        /*
+         * browing_homepage.sql and render_photo.sql
+         * this section is for rendering a photo. the variables before the try statement
+         * are what
+         * you can use in the UI
+         */
+        String url = "";
+        String poster_firstname = "";
+        String poster_lastname = "";
+        String caption = "";
+        List<Tag> tags = new ArrayList<>();
+        List<Pair<String, Comment>> comments = new ArrayList<>(); // String is firstName + LastName, Comment has all the
+                                                                  // fields to render for a comment
+        List<User> likers = new ArrayList<>();
+        int total_likes = 0;
+
+        int random_pid = 0;
+        /*
+         * code below gets a random pid from all users not logged in and randomly
+         * chooses a row and fetches its pid
+         */
+
+        int rows = all_photos_with_tags.size();
+        Random rando = new Random();
+        int random_row = rando.nextInt(rows);
+        random_pid = all_photos_with_tags.get(random_row);
+
+        System.out.println(random_pid);
+        /* here we get all the info from the randomly fetched pic */
+        try {
+            Photo pic = Main.db.fetchPhotoInfo(random_pid);
+            comments = Main.db.fetchPhotoComments(random_pid);
+            likers = Main.db.fetchPhotoLikers(random_pid);
+            tags = Main.db.fetchPhotoTags(random_pid);
+            User poster = Main.db.fetchPhotoUser(random_pid);
+
+            poster_firstname = poster.firstName;
+            poster_lastname = poster.lastName;
+
+            caption = pic.caption;
+            url = pic.url;
+
+            total_likes = likers.size();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        BorderPane rootPane2 = new BorderPane();
+        GridPane centerPane2 = new GridPane();
+
+        centerPane2.setAlignment(Pos.CENTER); // centered alignment
+        centerPane2.setPadding(new Insets(1, 1, 1, 1)); // this is the spacing from the perimeter of the window
+        centerPane2.setHgap(10); // the spacing between objects horizontally
+        centerPane2.setVgap(10); // the spacing between objects horizontally
+
+        Label feed = new Label("Feed");
+
+        feed.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
+        feed.setTextFill(Color.HOTPINK);
+
+        Button ownPhotos;
+        if (!user_photos) {
+            ownPhotos = new Button("Viewing Your Photos (Cannot switch to All Photos During a Search)");
+        } else {
+            ownPhotos = new Button("View All Photos (Cannot switch to Your Photos During a Search)");
+        }
+        ownPhotos.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        ownPhotos.setStyle("-fx-background-color: TRANSPARENT");
+
+        InputStream is = Main.class.getClassLoader().getResourceAsStream(url);
+        Image image = new Image(is);
+
+        ImageView view = new ImageView(image);
+
+        view.setX(10); // double check these dimensions
+        view.setY(10);
+
+        view.setFitHeight(300);
+        view.setFitWidth(500);
+
+        view.setPreserveRatio(true);
+
+        ListView<String> commentsListView = new ListView<>();
+        ObservableList<String> commentsList = FXCollections.observableArrayList();
+
+        // Iterate through the comment pairs and add the formatted comments to the list
+        for (Pair<String, Comment> commentPair : comments) {
+            String commenter = commentPair.getKey();
+            String rend_caption = commentPair.getValue().text;
+            String datePosted = commentPair.getValue().date;
+
+            String formattedComment = String.format("%s: %s (%s)", commenter, rend_caption, datePosted);
+            commentsList.add(formattedComment);
+        }
+
+        commentsListView.setItems(commentsList);
+
+        Label numLikes = new Label(total_likes + " Likes");
+
+        numLikes.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+        numLikes.setTextFill(Color.TEAL);
+        List<User> likers_copy = new ArrayList<>(likers);
+        // Add an action listener to the label
+        numLikes.setOnMouseClicked(event -> {
+            // Create a dialog for displaying the list of likers
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("List of Likers");
+
+            // Create a list view to display the likers
+            ListView<String> listView = new ListView<>();
+
+            // Map the likers to a list of their first and last names
+            List<String> likerNames = likers_copy.stream().map(liker -> liker.firstName + " " + liker.lastName)
+                    .collect(Collectors.toList());
+
+            // Add the liker names to the list view
+            listView.getItems().addAll(likerNames);
+
+            // Add the list view to the dialog pane
+            dialog.getDialogPane().setContent(listView);
+
+            // Add a button to close the dialog
+            ButtonType closeButton = new ButtonType("Close", ButtonData.CANCEL_CLOSE);
+            dialog.getDialogPane().getButtonTypes().add(closeButton);
+
+            // Show the dialog and wait for the user to close it
+            dialog.showAndWait();
+        });
+
+        HBox hBox2 = new HBox();
+        hBox2.setPadding(new Insets(10, 10, 10, 10));
+        hBox2.setSpacing(5);
+
+        VBox vBox2 = new VBox();
+        vBox2.setPadding(new Insets(10, 10, 10, 20));
+        vBox2.setSpacing(5);
+
+        Button logOut = new Button("Log Out");
+        logOut.setMaxSize(100.0, 100.0);
+
+        Button next = new Button("Next pic");
+        next.setMaxSize(100.0, 100.0);
+        rootPane2.setBottom(next);
+
+        HBox hBox3 = new HBox();
+        hBox3.setPadding(new Insets(10, 10, 10, 10));
+        hBox3.setSpacing(20);
+        hBox3.setAlignment(Pos.CENTER);
+        hBox3.getChildren().addAll(ownPhotos, logOut); // adding image to Hbox
+
+        VBox vBox = new VBox();
+        vBox.setPadding(new Insets(10, 10, 10, 20));
+        vBox.setSpacing(5);
+        // vBox.setAlignment(Pos.CENTER);
+
+        Button likeButton = new Button("Like");
+        int this_pic_pid = random_pid;
+        likeButton.setOnAction(e -> {
+            if (likeButton.getText().equals("Like")) {
+                likeButton.setText("Liked");
+                try {
+                    Main.db.recordLike(this_pic_pid, Main.curr_user);
+                } catch (SQLException b) {
+                    b.printStackTrace();
+                }
+            }
+        });
+
+        // Create a button for commenting
+        Button commentButton = new Button("Comment");
+
+        // Set an action for the button
+        commentButton.setOnAction(event -> {
+            // Create a text input dialog for entering the caption
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Enter Caption");
+            dialog.setHeaderText(null);
+            dialog.setContentText("Caption:");
+
+            // Show the dialog and wait for the user to enter a caption
+            Optional<String> result = dialog.showAndWait();
+
+            // If the user entered a caption, add it to the comments list
+            result.ifPresent(new_caption -> {
+                try {
+                    Main.db.postComment(this_pic_pid, Main.curr_user, new_caption);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                // code to add comment to database here
+            });
+        });
+
+        VBox tagsSection = new VBox();
+        tagsSection.setSpacing(10);
+        tagsSection.setPadding(new Insets(10));
+
+        Label tags_title = new Label("Tags");
+
+        tags_title.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
+        tags_title.setTextFill(Color.BLACK);
+        tagsSection.getChildren().add(view);
+        tagsSection.getChildren().add(tags_title);
+        // Create the tag buttons
+        for (Tag tag : tags) {
+            Button tagButton = new Button(tag.word);
+            tagButton.setOnAction(event -> {
+                switchToTagSearch(false, tag.word);
+            });
+            tagsSection.getChildren().add(tagButton);
+        }
+
+        Button goBack = new Button("Go Back To Main Feed");
+
+        HBox hBox4 = new HBox();
+        hBox4.setPadding(new Insets(10, 10, 10, 10));
+        hBox4.setSpacing(20);
+        hBox4.setAlignment(Pos.CENTER);
+        hBox4.getChildren().addAll(next, goBack);
+
+        vBox2.getChildren().addAll(numLikes, likeButton, commentButton, commentsListView);
+
+        hBox2.setAlignment(Pos.CENTER_LEFT);
+        hBox2.getChildren().addAll(tagsSection, vBox2); // adding image to Hbox
+
+        vBox.getChildren().addAll(feed, hBox3, hBox2, hBox4);
+
+        /*
+         * for (int i = 0; i < comments.size(); i++) {
+         * Pair<String, Comment> full_comment = comments.get(i);
+         * String comm = full_comment.getKey() + " " + full_comment.getValue().text;
+         * vBox.getChildren().add(new Label(comm));
+         * }
+         */
+        rootPane2.setCenter(vBox);
+
+        // Create a scene and place it in the stage
+        Scene pics_multiple_tag = new Scene(rootPane2, 700, 600); // also x and y correlated
+        this.pics_mutliple_tag = pics_multiple_tag;
+
+        next.setOnAction((ActionEvent h) -> {
+            this.switchToMultipleTagSearch(false, all_photos_with_tags);
+        });
+
+        logOut.setOnAction((ActionEvent h) -> {
+            this.switchToLogin();
+            // primaryStage.setScene(scene1); // based on the scene name of the welcome pg
+        });
+
+        goBack.setOnAction((ActionEvent e) -> this.switchBackToFeedPageSameState());
+
+        // Add the button to a parent node or scene
+
+        stage.setScene(pics_multiple_tag);
+
+    }
+
     void switchToTagSearch() {
         stage.setScene(searchTagsScene);
+    }
+
+    public void switchToTagSearch(boolean user_photos, String word) {
+
+        /*
+         * browing_homepage.sql and render_photo.sql
+         * this section is for rendering a photo. the variables before the try statement
+         * are what
+         * you can use in the UI
+         */
+        String url = "";
+        String poster_firstname = "";
+        String poster_lastname = "";
+        String caption = "";
+        List<Tag> tags = new ArrayList<>();
+        List<Pair<String, Comment>> comments = new ArrayList<>(); // String is firstName + LastName, Comment has all the
+                                                                  // fields to render for a comment
+        List<User> likers = new ArrayList<>();
+        int total_likes = 0;
+
+        int random_pid = 0;
+        /*
+         * code below gets a random pid from all users not logged in and randomly
+         * chooses a row and fetches its pid
+         */
+        try {
+            List<Integer> pids;
+            if (!user_photos) {
+                pids = Main.db.getPhotoIdsByTag(word, Main.curr_user);
+            } else {
+                pids = Main.db.getOwnPhotoIdsByTag(Main.curr_user, word);
+            }
+            int rows = pids.size();
+            Random rando = new Random();
+            int random_row = rando.nextInt(rows);
+            random_pid = pids.get(random_row);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println(random_pid);
+        /* here we get all the info from the randomly fetched pic */
+        try {
+            Photo pic = Main.db.fetchPhotoInfo(random_pid);
+            comments = Main.db.fetchPhotoComments(random_pid);
+            likers = Main.db.fetchPhotoLikers(random_pid);
+            tags = Main.db.fetchPhotoTags(random_pid);
+            User poster = Main.db.fetchPhotoUser(random_pid);
+
+            poster_firstname = poster.firstName;
+            poster_lastname = poster.lastName;
+
+            caption = pic.caption;
+            url = pic.url;
+
+            total_likes = likers.size();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        BorderPane rootPane2 = new BorderPane();
+        GridPane centerPane2 = new GridPane();
+
+        centerPane2.setAlignment(Pos.CENTER); // centered alignment
+        centerPane2.setPadding(new Insets(1, 1, 1, 1)); // this is the spacing from the perimeter of the window
+        centerPane2.setHgap(10); // the spacing between objects horizontally
+        centerPane2.setVgap(10); // the spacing between objects horizontally
+
+        Label feed = new Label("Feed");
+
+        feed.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
+        feed.setTextFill(Color.HOTPINK);
+
+        Button ownPhotos;
+        if (!user_photos) {
+            ownPhotos = new Button("View Your Photos");
+        } else {
+            ownPhotos = new Button("View All Photos");
+        }
+        ownPhotos.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        ownPhotos.setStyle("-fx-background-color: TRANSPARENT");
+
+        InputStream is = Main.class.getClassLoader().getResourceAsStream(url);
+        Image image = new Image(is);
+
+        ImageView view = new ImageView(image);
+
+        view.setX(10); // double check these dimensions
+        view.setY(10);
+
+        view.setFitHeight(300);
+        view.setFitWidth(500);
+
+        view.setPreserveRatio(true);
+
+        ListView<String> commentsListView = new ListView<>();
+        ObservableList<String> commentsList = FXCollections.observableArrayList();
+
+        // Iterate through the comment pairs and add the formatted comments to the list
+        for (Pair<String, Comment> commentPair : comments) {
+            String commenter = commentPair.getKey();
+            String rend_caption = commentPair.getValue().text;
+            String datePosted = commentPair.getValue().date;
+
+            String formattedComment = String.format("%s: %s (%s)", commenter, rend_caption, datePosted);
+            commentsList.add(formattedComment);
+        }
+
+        commentsListView.setItems(commentsList);
+
+        Label numLikes = new Label(total_likes + " Likes");
+
+        numLikes.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+        numLikes.setTextFill(Color.TEAL);
+        List<User> likers_copy = new ArrayList<>(likers);
+        // Add an action listener to the label
+        numLikes.setOnMouseClicked(event -> {
+            // Create a dialog for displaying the list of likers
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("List of Likers");
+
+            // Create a list view to display the likers
+            ListView<String> listView = new ListView<>();
+
+            // Map the likers to a list of their first and last names
+            List<String> likerNames = likers_copy.stream().map(liker -> liker.firstName + " " + liker.lastName)
+                    .collect(Collectors.toList());
+
+            // Add the liker names to the list view
+            listView.getItems().addAll(likerNames);
+
+            // Add the list view to the dialog pane
+            dialog.getDialogPane().setContent(listView);
+
+            // Add a button to close the dialog
+            ButtonType closeButton = new ButtonType("Close", ButtonData.CANCEL_CLOSE);
+            dialog.getDialogPane().getButtonTypes().add(closeButton);
+
+            // Show the dialog and wait for the user to close it
+            dialog.showAndWait();
+        });
+
+        HBox hBox2 = new HBox();
+        hBox2.setPadding(new Insets(10, 10, 10, 10));
+        hBox2.setSpacing(5);
+
+        VBox vBox2 = new VBox();
+        vBox2.setPadding(new Insets(10, 10, 10, 20));
+        vBox2.setSpacing(5);
+
+        Button logOut = new Button("Log Out");
+        logOut.setMaxSize(100.0, 100.0);
+
+        Button next = new Button("Next pic");
+        next.setMaxSize(100.0, 100.0);
+        rootPane2.setBottom(next);
+
+        HBox hBox3 = new HBox();
+        hBox3.setPadding(new Insets(10, 10, 10, 10));
+        hBox3.setSpacing(20);
+        hBox3.setAlignment(Pos.CENTER);
+        hBox3.getChildren().addAll(ownPhotos, logOut); // adding image to Hbox
+
+        VBox vBox = new VBox();
+        vBox.setPadding(new Insets(10, 10, 10, 20));
+        vBox.setSpacing(5);
+        // vBox.setAlignment(Pos.CENTER);
+
+        Button likeButton = new Button("Like");
+        int this_pic_pid = random_pid;
+        likeButton.setOnAction(e -> {
+            if (likeButton.getText().equals("Like")) {
+                likeButton.setText("Liked");
+                try {
+                    Main.db.recordLike(this_pic_pid, Main.curr_user);
+                } catch (SQLException b) {
+                    b.printStackTrace();
+                }
+            }
+        });
+
+        // Create a button for commenting
+        Button commentButton = new Button("Comment");
+
+        // Set an action for the button
+        commentButton.setOnAction(event -> {
+            // Create a text input dialog for entering the caption
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Enter Caption");
+            dialog.setHeaderText(null);
+            dialog.setContentText("Caption:");
+
+            // Show the dialog and wait for the user to enter a caption
+            Optional<String> result = dialog.showAndWait();
+
+            // If the user entered a caption, add it to the comments list
+            result.ifPresent(new_caption -> {
+                try {
+                    Main.db.postComment(this_pic_pid, Main.curr_user, new_caption);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                // code to add comment to database here
+            });
+        });
+
+        VBox tagsSection = new VBox();
+        tagsSection.setSpacing(10);
+        tagsSection.setPadding(new Insets(10));
+
+        Label tags_title = new Label("Tags");
+
+        tags_title.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
+        tags_title.setTextFill(Color.BLACK);
+        tagsSection.getChildren().add(view);
+        tagsSection.getChildren().add(tags_title);
+        // Create the tag buttons
+        for (Tag tag : tags) {
+            Button tagButton = new Button(tag.word);
+            tagButton.setOnAction(event -> {
+                switchToTagSearch(user_photos, word);
+            });
+            tagsSection.getChildren().add(tagButton);
+        }
+
+        Button goBack = new Button("Go Back To Main Feed");
+
+        HBox hBox4 = new HBox();
+        hBox4.setPadding(new Insets(10, 10, 10, 10));
+        hBox4.setSpacing(20);
+        hBox4.setAlignment(Pos.CENTER);
+        hBox4.getChildren().addAll(next, goBack);
+
+        vBox2.getChildren().addAll(numLikes, likeButton, commentButton, commentsListView);
+
+        hBox2.setAlignment(Pos.CENTER_LEFT);
+        hBox2.getChildren().addAll(tagsSection, vBox2); // adding image to Hbox
+
+        vBox.getChildren().addAll(feed, hBox3, hBox2, hBox4);
+
+        /*
+         * for (int i = 0; i < comments.size(); i++) {
+         * Pair<String, Comment> full_comment = comments.get(i);
+         * String comm = full_comment.getKey() + " " + full_comment.getValue().text;
+         * vBox.getChildren().add(new Label(comm));
+         * }
+         */
+        rootPane2.setCenter(vBox);
+
+        // Create a scene and place it in the stage
+        Scene pics_same_tag = new Scene(rootPane2, 700, 600); // also x and y correlated
+        this.pics_same_tag = pics_same_tag;
+
+        next.setOnAction((ActionEvent h) -> {
+            this.switchToTagSearch(user_photos, word);
+        });
+
+        if (!user_photos) {
+            ownPhotos.setOnAction((ActionEvent z) -> this.switchToTagSearch(true, word));
+        } else {
+            ownPhotos.setOnAction((ActionEvent z) -> this.switchToTagSearch(false, word));
+        }
+
+        logOut.setOnAction((ActionEvent h) -> {
+            this.switchToLogin();
+            // primaryStage.setScene(scene1); // based on the scene name of the welcome pg
+        });
+
+        goBack.setOnAction((ActionEvent e) -> this.switchBackToFeedPageSameState());
+
+        // Add the button to a parent node or scene
+
+        stage.setScene(pics_same_tag);
     }
 
     void switchToUserFriends() {
@@ -618,6 +1275,10 @@ public class SceneManager {
 
         });
         stage.setScene(sceneUserFriends);
+    }
+
+    void switchBackToFeedPageSameState() {
+        stage.setScene(feedScene);
     }
 
     void switchTodisplayFriendsOfUsers() {
@@ -1051,116 +1712,118 @@ public class SceneManager {
         stage.show();
     }
 
-    void switchToYouMayAlsoLike(){
+    void switchToYouMayAlsoLike() {
 
-        List<Pair<Integer,Integer>> top_pics = new ArrayList<>();
-                try{
-                    top_pics = Main.db.getTopTagsForUser(Main.curr_user);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }
+        List<Pair<Integer, Integer>> top_pics = new ArrayList<>();
+        try {
+            top_pics = Main.db.getTopTagsForUser(Main.curr_user);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
-                BorderPane rootPaneYouMayAlsoLike = new BorderPane();
-                GridPane centerPaneYouMayAlsoLike = new GridPane();
+        BorderPane rootPaneYouMayAlsoLike = new BorderPane();
+        GridPane centerPaneYouMayAlsoLike = new GridPane();
 
-                centerPaneYouMayAlsoLike.setAlignment(Pos.CENTER); // centered alignment
-                centerPaneYouMayAlsoLike.setPadding(new Insets(1, 1, 1, 1)); // this is the spacing from the perimeter of the window
-                centerPaneYouMayAlsoLike.setHgap(10); // the spacing between objects horizontally
-                centerPaneYouMayAlsoLike.setVgap(10); // the spacing between objects horizontally
+        centerPaneYouMayAlsoLike.setAlignment(Pos.CENTER); // centered alignment
+        centerPaneYouMayAlsoLike.setPadding(new Insets(1, 1, 1, 1)); // this is the spacing from the perimeter of the
+                                                                     // window
+        centerPaneYouMayAlsoLike.setHgap(10); // the spacing between objects horizontally
+        centerPaneYouMayAlsoLike.setVgap(10); // the spacing between objects horizontally
 
-                Label YouMayAlsoLikeWelcome = new Label("You May Also Like");
+        Label YouMayAlsoLikeWelcome = new Label("You May Also Like");
 
-                YouMayAlsoLikeWelcome.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
-                YouMayAlsoLikeWelcome.setTextFill(Color.HOTPINK);
+        YouMayAlsoLikeWelcome.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
+        YouMayAlsoLikeWelcome.setTextFill(Color.HOTPINK);
 
-                int photoNum = 0;
+        int photoNum = 0;
 
-                String urlYMAL = "";
-                String poster_firstnameYMAL = "";
-                String poster_lastnameYMAL = "";
-                String captionYMAL = "";
-                List<Tag> tagsYMAL = new ArrayList<>();
-                List<Pair<String, Comment>> commentsYMAL = new ArrayList<>();
+        String urlYMAL = "";
+        String poster_firstnameYMAL = "";
+        String poster_lastnameYMAL = "";
+        String captionYMAL = "";
+        List<Tag> tagsYMAL = new ArrayList<>();
+        List<Pair<String, Comment>> commentsYMAL = new ArrayList<>();
 
-                List<User> likersYMAL = new ArrayList<>();
-                int total_likesYMAL = 0;
-                User posterYMAL = new User();;
-                Photo picYMAL = new Photo();
+        List<User> likersYMAL = new ArrayList<>();
+        int total_likesYMAL = 0;
+        User posterYMAL = new User();
+        ;
+        Photo picYMAL = new Photo();
 
-                try {
-                    picYMAL = Main.db.fetchPhotoInfo(top_pics.get(photoNum).getKey());
-                    commentsYMAL = Main.db.fetchPhotoComments(top_pics.get(photoNum).getKey());
-                    likersYMAL = Main.db.fetchPhotoLikers(top_pics.get(photoNum).getKey());
-                    tagsYMAL = Main.db.fetchPhotoTags(top_pics.get(photoNum).getKey());
-                    posterYMAL = Main.db.fetchPhotoUser(top_pics.get(photoNum).getKey());
-                } catch (SQLException e) {
+        try {
+            picYMAL = Main.db.fetchPhotoInfo(top_pics.get(photoNum).getKey());
+            commentsYMAL = Main.db.fetchPhotoComments(top_pics.get(photoNum).getKey());
+            likersYMAL = Main.db.fetchPhotoLikers(top_pics.get(photoNum).getKey());
+            tagsYMAL = Main.db.fetchPhotoTags(top_pics.get(photoNum).getKey());
+            posterYMAL = Main.db.fetchPhotoUser(top_pics.get(photoNum).getKey());
+        } catch (SQLException e) {
 
-                }
+        }
 
-                poster_firstnameYMAL = posterYMAL.firstName;
-                poster_lastnameYMAL = posterYMAL.lastName;
+        poster_firstnameYMAL = posterYMAL.firstName;
+        poster_lastnameYMAL = posterYMAL.lastName;
 
-                captionYMAL = picYMAL.caption;
-                urlYMAL = picYMAL.url;
+        captionYMAL = picYMAL.caption;
+        urlYMAL = picYMAL.url;
 
-                total_likesYMAL = likersYMAL.size();
-                
-                InputStream isYMAL = Main.class.getClassLoader().getResourceAsStream(urlYMAL);
-                Image imageYMAL = new Image(isYMAL);
+        total_likesYMAL = likersYMAL.size();
 
-                ImageView viewYMAL = new ImageView(imageYMAL);
+        InputStream isYMAL = Main.class.getClassLoader().getResourceAsStream(urlYMAL);
+        Image imageYMAL = new Image(isYMAL);
 
-                viewYMAL.setX(25);
-                viewYMAL.setY(25);
+        ImageView viewYMAL = new ImageView(imageYMAL);
 
-                viewYMAL.setFitHeight(100);
-                viewYMAL.setFitWidth(100);
+        viewYMAL.setX(25);
+        viewYMAL.setY(25);
 
-                viewYMAL.setPreserveRatio(true);
+        viewYMAL.setFitHeight(100);
+        viewYMAL.setFitWidth(100);
 
-                Label comment0YMAL = new Label("Comments");
+        viewYMAL.setPreserveRatio(true);
 
-                comment0YMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
-                comment0YMAL.setTextFill(Color.INDIGO);
+        Label comment0YMAL = new Label("Comments");
 
-                Label comment1YMAL = new Label("");
-                comment1YMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
-                comment1YMAL.setTextFill(Color.BLACK);
-                
-                Label numLikesYMAL = new Label(total_likesYMAL + " Likes");  // NOT SURE WHERE TO GET LIKES FROM
+        comment0YMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+        comment0YMAL.setTextFill(Color.INDIGO);
 
-                numLikesYMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
-                numLikesYMAL.setTextFill(Color.TEAL);
+        Label comment1YMAL = new Label("");
+        comment1YMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
+        comment1YMAL.setTextFill(Color.BLACK);
 
-                HBox hBox2YMAL = new HBox();
-                hBox2YMAL.setPadding(new Insets(10, 10, 10, 10));
-                hBox2YMAL.setSpacing(5);
+        Label numLikesYMAL = new Label(total_likesYMAL + " Likes"); // NOT SURE WHERE TO GET LIKES FROM
 
-                hBox2YMAL.setAlignment(Pos.CENTER_RIGHT);
-                hBox2YMAL.getChildren().add(viewYMAL);
+        numLikesYMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+        numLikesYMAL.setTextFill(Color.TEAL);
 
-                Button nextYMAL = new Button("Next pic");
-                nextYMAL.setMaxSize(100.0, 100.0);
-                rootPaneYouMayAlsoLike.setBottom(nextYMAL);
+        HBox hBox2YMAL = new HBox();
+        hBox2YMAL.setPadding(new Insets(10, 10, 10, 10));
+        hBox2YMAL.setSpacing(5);
 
-                VBox vBoxYMAL = new VBox();
-                vBoxYMAL.setPadding(new Insets(10, 10, 10, 20));
-                vBoxYMAL.setSpacing(5);
-                // vBox.setAlignment(Pos.CENTER);
-                vBoxYMAL.getChildren().addAll(hBox2YMAL, numLikesYMAL, comment0YMAL, comment1YMAL);
+        hBox2YMAL.setAlignment(Pos.CENTER_RIGHT);
+        hBox2YMAL.getChildren().add(viewYMAL);
 
-                for (int p = 0; p < commentsYMAL.size(); p++) {
-                    Pair<String, Comment> full_comment = commentsYMAL.get(p);
-                    String comm = full_comment.getKey() + " " + full_comment.getValue().text;
-                    vBoxYMAL.getChildren().add(new Label(comm));
-                }
+        Button nextYMAL = new Button("Next pic");
+        nextYMAL.setMaxSize(100.0, 100.0);
+        rootPaneYouMayAlsoLike.setBottom(nextYMAL);
 
-                rootPaneYouMayAlsoLike.setCenter(vBoxYMAL);
+        VBox vBoxYMAL = new VBox();
+        vBoxYMAL.setPadding(new Insets(10, 10, 10, 20));
+        vBoxYMAL.setSpacing(5);
+        // vBox.setAlignment(Pos.CENTER);
+        vBoxYMAL.getChildren().addAll(hBox2YMAL, numLikesYMAL, comment0YMAL, comment1YMAL);
 
-                Scene YouMayAlsoLikeScene = new Scene(rootPaneYouMayAlsoLike, 700, 600);
-                Main.sm.youmayAlsoLikeScene = YouMayAlsoLikeScene;
+        for (int p = 0; p < commentsYMAL.size(); p++) {
+            Pair<String, Comment> full_comment = commentsYMAL.get(p);
+            String comm = full_comment.getKey() + " " + full_comment.getValue().text;
+            vBoxYMAL.getChildren().add(new Label(comm));
+        }
 
-                stage.setScene(YouMayAlsoLikeScene);
+        rootPaneYouMayAlsoLike.setCenter(vBoxYMAL);
+
+        Scene YouMayAlsoLikeScene = new Scene(rootPaneYouMayAlsoLike, 700, 600);
+        Main.sm.youmayAlsoLikeScene = YouMayAlsoLikeScene;
+
+        stage.setScene(YouMayAlsoLikeScene);
     }
 
 }
