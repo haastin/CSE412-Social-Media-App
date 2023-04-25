@@ -155,7 +155,7 @@ public class Main extends Application {
             }
             else{
                 curr_user = status;
-                sm.switchToFeed();
+                sm.switchToFeed(false);
                 logged_in = true;
                 //primaryStage.setScene(feedScene);
                 //primaryStage.show();
@@ -287,7 +287,7 @@ public class Main extends Application {
                     emailExists = db.checkEmailExists(email);
                     if(!emailExists) {
                         db.createUser(firstName, lastName, password_hashed, gender, hometown, email, dob);
-                        sm.switchToFeed();
+                        sm.switchToFeed(false);
                         logged_in = true;
                     } else {
                         
@@ -391,7 +391,7 @@ public class Main extends Application {
                     // go back to main feedpage if go back is pressed
                     GoBackTopTen.setOnAction (ev -> {
 
-                        sm.switchToFeed();
+                        sm.switchToFeed(false);
 
                     });
 
@@ -479,7 +479,7 @@ public class Main extends Application {
                     // go back to feedPage
                     GoBackSearchUsers.setOnAction(ev -> {
 
-                        sm.switchToFeed();
+                        sm.switchToFeed(false);
 
                     });
 
@@ -544,7 +544,7 @@ public class Main extends Application {
 
                     UserFriendsGoBack.setOnAction(ev -> {
 
-                        sm.switchToFeed();
+                        sm.switchToFeed(false);
 
                     });
 
@@ -603,7 +603,7 @@ public class Main extends Application {
 
                     FriendsOfUserGoBack.setOnAction(ev -> {
 
-                        sm.switchToFeed();
+                        sm.switchToFeed(false);
 
                     });
 
@@ -664,7 +664,7 @@ public class Main extends Application {
 
                     FriendsRecGoBack.setOnAction(ev -> {
 
-                        sm.switchToFeed();
+                        sm.switchToFeed(false);
 
                     });
 
@@ -897,7 +897,7 @@ public class Main extends Application {
                             }
                             
                             if (success) {
-                                sm.switchToFeed();
+                                sm.switchToFeed(false);
                             }
 
                         });
@@ -907,7 +907,7 @@ public class Main extends Application {
                     // go back to feedpage if goback button is pressed
                     UserPageGoBack.setOnAction(ev -> {
 
-                        sm.switchToFeed();
+                        sm.switchToFeed(false);
 
                     });
 
@@ -1018,7 +1018,7 @@ public class Main extends Application {
                     // go back to feedpage if goback button is pressed
                     SearchCommentsGoBack.setOnAction(ev -> {
 
-                        sm.switchToFeed();
+                        sm.switchToFeed(false);
 
                     });
 
@@ -1138,7 +1138,7 @@ public class Main extends Application {
 
                     MostPopTagsGoBack.setOnAction(ev -> {
 
-                       sm.switchToFeed(); 
+                       sm.switchToFeed(false); 
 
                     });
                     

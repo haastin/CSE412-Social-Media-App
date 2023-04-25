@@ -84,7 +84,7 @@ public class SceneManager {
         stage.setScene(loginScene);
     }
 
-    public void switchToFeed() {
+    public void switchToFeed(boolean user_photos) {
         // Switch to scene2
         // Stage stage = (Stage) loginScene.getWindow();
 
@@ -110,7 +110,13 @@ public class SceneManager {
          * chooses a row and fetches its pid
          */
         try {
-            List<Integer> pids = Main.db.getAllPidsOfUsersNotLoggedIn(Main.curr_user);
+            List<Integer> pids;
+            if(!user_photos){
+             pids = Main.db.getAllPidsOfUsersNotLoggedIn(Main.curr_user);
+            }
+            else{
+            pids = Main.db.getAllPhotosOfLoggedInUser(Main.curr_user);
+            }
             int rows = pids.size();
             Random rando = new Random();
             int random_row = rando.nextInt(rows);
@@ -151,7 +157,13 @@ public class SceneManager {
         feed.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
         feed.setTextFill(Color.HOTPINK);
 
-        Button ownPhotos = new Button("View Your Photos");
+        Button ownPhotos;
+        if(!user_photos){
+        ownPhotos = new Button("View Your Photos");
+        }
+        else{
+            ownPhotos = new Button("View All Photos");
+        }
         ownPhotos.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         ownPhotos.setStyle("-fx-background-color: TRANSPARENT");
 
@@ -174,45 +186,10 @@ public class SceneManager {
                 "You May Also Like");
 
         suggest.setPromptText("Suggestions");
-        /*
-         * suggest.getEditor().textProperty().addListener(new ChangeListener<String>() {
-         * 
-         * @Override
-         * public void changed(ObservableValue<? extends String> observable, String
-         * oldValue, String newValue) {
-         * System.out.println("yuh");
-         * }
-         * });
-         */
-
-        /*
-         * URL url = getClass().getResource("/drawIcon.png");
-         * Image image = ImageIO.read(url);
-         * In case you want to create a javafx Image:
-         * Image image = new Image("/drawIcon.png");
-         */
-
-        // =================================================================================
-
-        /*
-         * //Passing FileInputStream object as a parameter
-         * FileInputStream inputstream = new FileInputStream("C:\\images\\image.jpg");
-         * Image image = new Image(inputstream);
-         * 
-         * //Loading image from URL
-         * //Image image = new Image(new FileInputStream("url for the image"));
-         * -----------------------------------------------------------------------------
-         * ----
-         * 
-         * //Creating an image
-         * Image image = new Image(new FileInputStream("path of the image"));
-         * 
-         * //Setting the image view
-         * ImageView imageView = new ImageView(image);
-         */
+       
         System.out.println(Main.curr_user);
         System.out.println(url);
-        // String imagePath = "test.jpeg";
+        
         InputStream is = Main.class.getClassLoader().getResourceAsStream(url);
         Image image = new Image(is);
 
@@ -225,13 +202,6 @@ public class SceneManager {
         view.setFitWidth(100);
 
         view.setPreserveRatio(true);
-
-        /*
-         * TextField temp = new TextField();
-         * temp.setPromptText("(Temporary TextField --> In place of picture)");
-         * temp.setPrefWidth(100);
-         * temp.setPrefHeight(400);
-         */
 
         Button searchIt = new Button("Search");
         searchIt.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -322,7 +292,7 @@ public class SceneManager {
         stage.show(); // Display the stage
 
         next.setOnAction((ActionEvent h) -> {
-            this.switchToFeed();
+            this.switchToFeed(user_photos);
         });
 
         // comboBox listeners below
@@ -391,8 +361,12 @@ public class SceneManager {
             // suggest pg
         });
 
-        ownPhotos.setOnAction(event);
-
+        if(!user_photos){
+        ownPhotos.setOnAction((ActionEvent z) ->  this.switchToFeed(true));
+        }
+        else{
+            ownPhotos.setOnAction((ActionEvent z) ->  this.switchToFeed(false));
+        }
         /*
          * clear.setOnAction((ActionEvent g) -> {
          * // suggest.setPromptText("Suggestions");
