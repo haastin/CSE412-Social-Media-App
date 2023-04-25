@@ -55,6 +55,7 @@ public class SceneManager {
     public Scene mostPopTagsScene;
     public Scene searchTagsScene;
     private Stage stage;
+    private Scene youmayAlsoLikeScene;
 
     public SceneManager(Stage stage) {
         this.stage = stage;
@@ -172,11 +173,11 @@ public class SceneManager {
 
         ImageView view = new ImageView(image);
 
-        view.setX(25); // double check these dimensions
-        view.setY(25);
+        view.setX(10); // double check these dimensions
+        view.setY(10);
 
-        view.setFitHeight(100);
-        view.setFitWidth(100);
+        view.setFitHeight(300);
+        view.setFitWidth(500);
 
         view.setPreserveRatio(true);
 
@@ -187,12 +188,6 @@ public class SceneManager {
         Button clear = new Button("Clear");
         clear.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         clear.setStyle("-fx-background-color: LIGHTSALMON");
-
-        HBox hBox = new HBox();
-        hBox.setPadding(new Insets(10, 10, 10, 10));
-        hBox.setSpacing(5);
-        hBox.setAlignment(Pos.CENTER);
-        hBox.getChildren().addAll(suggest, search, searchIt, clear);
 
         ListView<String> commentsListView = new ListView<>();
         ObservableList<String> commentsList = FXCollections.observableArrayList();
@@ -245,8 +240,9 @@ public class SceneManager {
         hBox2.setPadding(new Insets(10, 10, 10, 10));
         hBox2.setSpacing(5);
 
-        hBox2.setAlignment(Pos.CENTER_RIGHT);
-        hBox2.getChildren().add(view); // adding image to Hbox
+        VBox vBox2 = new VBox();
+        vBox2.setPadding(new Insets(10, 10, 10, 20));
+        vBox2.setSpacing(5);
 
         Button logOut = new Button("Log Out");
         logOut.setMaxSize(100.0, 100.0);
@@ -259,7 +255,7 @@ public class SceneManager {
         hBox3.setPadding(new Insets(10, 10, 10, 10));
         hBox3.setSpacing(20);
         hBox3.setAlignment(Pos.CENTER);
-        hBox3.getChildren().addAll(ownPhotos, logOut); // adding image to Hbox
+        hBox3.getChildren().addAll(ownPhotos, suggest ,logOut); // adding image to Hbox
 
         VBox vBox = new VBox();
         vBox.setPadding(new Insets(10, 10, 10, 20));
@@ -305,6 +301,25 @@ public class SceneManager {
             });
         });
 
+        VBox tagsSection = new VBox();
+        tagsSection.setSpacing(10);
+        tagsSection.setPadding(new Insets(10));
+        
+        Label tags_title = new Label("Tags");
+
+        tags_title.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
+        tags_title.setTextFill(Color.BLACK);
+        tagsSection.getChildren().add(view);
+        tagsSection.getChildren().add(tags_title);
+        // Create the tag buttons
+        for (Tag tag : tags) {
+            Button tagButton = new Button(tag.word);
+            tagButton.setOnAction(event -> {
+                switchToTagSearch();
+            });
+            tagsSection.getChildren().add(tagButton);
+        }
+
         Button upload_button = new Button("Upload Image");
 
         HBox hBox4 = new HBox();
@@ -313,7 +328,12 @@ public class SceneManager {
         hBox4.setAlignment(Pos.CENTER);
         hBox4.getChildren().addAll(next, upload_button);
 
-        vBox.getChildren().addAll(feed, hBox3, hBox, hBox2, numLikes, likeButton, commentButton, commentsListView, hBox4);
+        vBox2.getChildren().addAll(numLikes, likeButton, commentButton, commentsListView);
+
+        hBox2.setAlignment(Pos.CENTER_LEFT);
+        hBox2.getChildren().addAll(tagsSection, vBox2); // adding image to Hbox
+
+        vBox.getChildren().addAll(feed, hBox3, hBox2, hBox4);
 
         /*
          * for (int i = 0; i < comments.size(); i++) {
@@ -384,7 +404,7 @@ public class SceneManager {
                 }
 
                 else if (suggest.getValue().toString().equals("You May Also Like")) {
-                    stage.setScene(feedScene); // change to you may also like page
+                    switchToYouMayAlsoLike();
                 }
 
             }
@@ -404,13 +424,6 @@ public class SceneManager {
         } else {
             ownPhotos.setOnAction((ActionEvent z) -> this.switchToFeed(false));
         }
-        /*
-         * clear.setOnAction((ActionEvent g) -> {
-         * // suggest.setPromptText("Suggestions");
-         * primaryStage.setScene(feedScene); // refreshes the page basically
-         * 
-         * });
-         */
 
         logOut.setOnAction((ActionEvent h) -> {
             this.switchToLogin();
@@ -1036,6 +1049,118 @@ public class SceneManager {
 
         stage.setScene(userProfileScene);
         stage.show();
+    }
+
+    void switchToYouMayAlsoLike(){
+
+        List<Pair<Integer,Integer>> top_pics = new ArrayList<>();
+                try{
+                    top_pics = Main.db.getTopTagsForUser(Main.curr_user);
+                }catch(SQLException e){
+                    e.printStackTrace();
+                }
+
+                BorderPane rootPaneYouMayAlsoLike = new BorderPane();
+                GridPane centerPaneYouMayAlsoLike = new GridPane();
+
+                centerPaneYouMayAlsoLike.setAlignment(Pos.CENTER); // centered alignment
+                centerPaneYouMayAlsoLike.setPadding(new Insets(1, 1, 1, 1)); // this is the spacing from the perimeter of the window
+                centerPaneYouMayAlsoLike.setHgap(10); // the spacing between objects horizontally
+                centerPaneYouMayAlsoLike.setVgap(10); // the spacing between objects horizontally
+
+                Label YouMayAlsoLikeWelcome = new Label("You May Also Like");
+
+                YouMayAlsoLikeWelcome.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
+                YouMayAlsoLikeWelcome.setTextFill(Color.HOTPINK);
+
+                int photoNum = 0;
+
+                String urlYMAL = "";
+                String poster_firstnameYMAL = "";
+                String poster_lastnameYMAL = "";
+                String captionYMAL = "";
+                List<Tag> tagsYMAL = new ArrayList<>();
+                List<Pair<String, Comment>> commentsYMAL = new ArrayList<>();
+
+                List<User> likersYMAL = new ArrayList<>();
+                int total_likesYMAL = 0;
+                User posterYMAL = new User();;
+                Photo picYMAL = new Photo();
+
+                try {
+                    picYMAL = Main.db.fetchPhotoInfo(top_pics.get(photoNum).getKey());
+                    commentsYMAL = Main.db.fetchPhotoComments(top_pics.get(photoNum).getKey());
+                    likersYMAL = Main.db.fetchPhotoLikers(top_pics.get(photoNum).getKey());
+                    tagsYMAL = Main.db.fetchPhotoTags(top_pics.get(photoNum).getKey());
+                    posterYMAL = Main.db.fetchPhotoUser(top_pics.get(photoNum).getKey());
+                } catch (SQLException e) {
+
+                }
+
+                poster_firstnameYMAL = posterYMAL.firstName;
+                poster_lastnameYMAL = posterYMAL.lastName;
+
+                captionYMAL = picYMAL.caption;
+                urlYMAL = picYMAL.url;
+
+                total_likesYMAL = likersYMAL.size();
+                
+                InputStream isYMAL = Main.class.getClassLoader().getResourceAsStream(urlYMAL);
+                Image imageYMAL = new Image(isYMAL);
+
+                ImageView viewYMAL = new ImageView(imageYMAL);
+
+                viewYMAL.setX(25);
+                viewYMAL.setY(25);
+
+                viewYMAL.setFitHeight(100);
+                viewYMAL.setFitWidth(100);
+
+                viewYMAL.setPreserveRatio(true);
+
+                Label comment0YMAL = new Label("Comments");
+
+                comment0YMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+                comment0YMAL.setTextFill(Color.INDIGO);
+
+                Label comment1YMAL = new Label("");
+                comment1YMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
+                comment1YMAL.setTextFill(Color.BLACK);
+                
+                Label numLikesYMAL = new Label(total_likesYMAL + " Likes");  // NOT SURE WHERE TO GET LIKES FROM
+
+                numLikesYMAL.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+                numLikesYMAL.setTextFill(Color.TEAL);
+
+                HBox hBox2YMAL = new HBox();
+                hBox2YMAL.setPadding(new Insets(10, 10, 10, 10));
+                hBox2YMAL.setSpacing(5);
+
+                hBox2YMAL.setAlignment(Pos.CENTER_RIGHT);
+                hBox2YMAL.getChildren().add(viewYMAL);
+
+                Button nextYMAL = new Button("Next pic");
+                nextYMAL.setMaxSize(100.0, 100.0);
+                rootPaneYouMayAlsoLike.setBottom(nextYMAL);
+
+                VBox vBoxYMAL = new VBox();
+                vBoxYMAL.setPadding(new Insets(10, 10, 10, 20));
+                vBoxYMAL.setSpacing(5);
+                // vBox.setAlignment(Pos.CENTER);
+                vBoxYMAL.getChildren().addAll(hBox2YMAL, numLikesYMAL, comment0YMAL, comment1YMAL);
+
+                for (int p = 0; p < commentsYMAL.size(); p++) {
+                    Pair<String, Comment> full_comment = commentsYMAL.get(p);
+                    String comm = full_comment.getKey() + " " + full_comment.getValue().text;
+                    vBoxYMAL.getChildren().add(new Label(comm));
+                }
+
+                rootPaneYouMayAlsoLike.setCenter(vBoxYMAL);
+
+                Scene YouMayAlsoLikeScene = new Scene(rootPaneYouMayAlsoLike, 700, 600);
+                Main.sm.youmayAlsoLikeScene = YouMayAlsoLikeScene;
+
+                stage.setScene(YouMayAlsoLikeScene);
     }
 
 }
