@@ -159,7 +159,7 @@ public class Main extends Application {
             }
             else{
                 curr_user = status;
-                sm.switchToFeed(false);
+                sm.switchToFeed();
                 logged_in = true;
                 //primaryStage.setScene(feedScene);
                 //primaryStage.show();
@@ -291,7 +291,7 @@ public class Main extends Application {
                     emailExists = db.checkEmailExists(email);
                     if(!emailExists) {
                         db.createUser(firstName, lastName, password_hashed, gender, hometown, email, dob);
-                        sm.switchToFeed(false);
+                        sm.switchToFeed();
                         logged_in = true;
                     } else {
                         
@@ -394,7 +394,7 @@ public class Main extends Application {
                     // go back to main feedpage if go back is pressed
                     GoBackTopTen.setOnAction (ev -> {
 
-                        sm.switchToFeed(false);
+                        sm.switchToFeed();
 
                     });
 
@@ -446,11 +446,24 @@ public class Main extends Application {
                 
                     sm.searchForUsersScene = scene3;
 
+                    Button buttonToAddFriend1 = new Button("Add Friend");
+                    Button buttonToAddFriend2 = new Button("Add Friend");
+                    Button buttonToAddFriend3 = new Button("Add Friend");
+                    Button buttonToAddFriend4 = new Button("Add Friend");
+                    Button buttonToAddFriend5 = new Button("Add Friend");
+                    Button buttonToAddFriend6 = new Button("Add Friend");
+                    Button buttonToAddFriend7 = new Button("Add Friend");
+                    Button buttonToAddFriend8 = new Button("Add Friend");
+                    Button buttonToAddFriend9 = new Button("Add Friend");
+                    Button buttonToAddFriend10 = new Button("Add Friend");
+                    
+
                     SearchUserButton.setOnAction(ev -> {
                         
                         String search_firstname = SearchUserFirstNameField.getText();
                         String search_lastname = SearchUserLastNameField.getText();
                         List<Integer> uids_of_searched_name = new ArrayList<>();
+
                         try{
                             uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
                         }catch(SQLException e){
@@ -459,6 +472,19 @@ public class Main extends Application {
                         
                         // display searched users on pane
                         int j = 6;
+
+                        // add buttons to centerPane
+                        centerPaneSearchUsers.add(buttonToAddFriend1, 2, 6);
+                        centerPaneSearchUsers.add(buttonToAddFriend2, 2, 7);
+                        centerPaneSearchUsers.add(buttonToAddFriend3, 2, 8);
+                        centerPaneSearchUsers.add(buttonToAddFriend4, 2, 9);
+                        centerPaneSearchUsers.add(buttonToAddFriend5, 2, 10);
+                        centerPaneSearchUsers.add(buttonToAddFriend6, 2, 11);
+                        centerPaneSearchUsers.add(buttonToAddFriend7, 2, 12);
+                        centerPaneSearchUsers.add(buttonToAddFriend8, 2, 13);
+                        centerPaneSearchUsers.add(buttonToAddFriend9, 2, 14);
+                        centerPaneSearchUsers.add(buttonToAddFriend10, 2, 15);
+
                         for (Integer user : uids_of_searched_name) {
                             
                             User u = null;
@@ -479,10 +505,231 @@ public class Main extends Application {
 
                     });
 
+                    // if a user presses on a button, friend the associated user
+                    buttonToAddFriend1.setOnAction(ev -> {
+                            
+                        String search_firstname = SearchUserFirstNameField.getText();
+                        String search_lastname = SearchUserLastNameField.getText();
+                        List<Integer> uids_of_searched_name = new ArrayList<>();
+
+                        try{
+                            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+                            User u = null;
+
+                            if (uids_of_searched_name.size() > 0) {
+                                u = db.getAllUserInfo(uids_of_searched_name.get(0));
+                            }
+
+                            db.recordFriendship(curr_user, u.uid);
+
+                        } catch (SQLException e) {
+                            
+                        }    
+
+                    });
+
+                    buttonToAddFriend2.setOnAction(ev -> {
+                            
+                        String search_firstname = SearchUserFirstNameField.getText();
+                        String search_lastname = SearchUserLastNameField.getText();
+                        List<Integer> uids_of_searched_name = new ArrayList<>();
+
+                        try{
+                            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+                            User u = null;
+
+                            if (uids_of_searched_name.size() > 1) {
+                                u = db.getAllUserInfo(uids_of_searched_name.get(1));
+                            }
+
+                            db.recordFriendship(curr_user, u.uid);
+
+                        } catch (SQLException e) {
+                            
+                        }    
+
+                    });
+
+                    buttonToAddFriend3.setOnAction(ev -> {
+                            
+                        String search_firstname = SearchUserFirstNameField.getText();
+                        String search_lastname = SearchUserLastNameField.getText();
+                        List<Integer> uids_of_searched_name = new ArrayList<>();
+
+                        try{
+                            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+                            User u = null;
+
+                            if (uids_of_searched_name.size() > 2) {
+                                u = db.getAllUserInfo(uids_of_searched_name.get(2));
+                            }
+
+                            db.recordFriendship(curr_user, u.uid);
+
+                        } catch (SQLException e) {
+                            
+                        }    
+
+                    });
+
+                    buttonToAddFriend4.setOnAction(ev -> {
+                            
+                        String search_firstname = SearchUserFirstNameField.getText();
+                        String search_lastname = SearchUserLastNameField.getText();
+                        List<Integer> uids_of_searched_name = new ArrayList<>();
+
+                        try{
+                            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+                            User u = null;
+
+                            if (uids_of_searched_name.size() > 3) {
+                                u = db.getAllUserInfo(uids_of_searched_name.get(3));
+                            }
+
+                            db.recordFriendship(curr_user, u.uid);
+
+                        } catch (SQLException e) {
+                            
+                        }    
+
+                    });
+
+                    buttonToAddFriend5.setOnAction(ev -> {
+                            
+                        String search_firstname = SearchUserFirstNameField.getText();
+                        String search_lastname = SearchUserLastNameField.getText();
+                        List<Integer> uids_of_searched_name = new ArrayList<>();
+
+                        try{
+                            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+                            User u = null;
+
+                            if (uids_of_searched_name.size() > 4) {
+                                u = db.getAllUserInfo(uids_of_searched_name.get(4));
+                            }
+
+                            db.recordFriendship(curr_user, u.uid);
+
+                        } catch (SQLException e) {
+                            
+                        }    
+
+                    });
+
+                    buttonToAddFriend6.setOnAction(ev -> {
+                            
+                        String search_firstname = SearchUserFirstNameField.getText();
+                        String search_lastname = SearchUserLastNameField.getText();
+                        List<Integer> uids_of_searched_name = new ArrayList<>();
+
+                        try{
+                            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+                            User u = null;
+
+                            if (uids_of_searched_name.size() > 5) {
+                                u = db.getAllUserInfo(uids_of_searched_name.get(5));
+                            }
+
+                            db.recordFriendship(curr_user, u.uid);
+
+                        } catch (SQLException e) {
+                            
+                        }    
+
+                    });
+
+                    buttonToAddFriend7.setOnAction(ev -> {
+                            
+                        String search_firstname = SearchUserFirstNameField.getText();
+                        String search_lastname = SearchUserLastNameField.getText();
+                        List<Integer> uids_of_searched_name = new ArrayList<>();
+
+                        try{
+                            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+                            User u = null;
+
+                            if (uids_of_searched_name.size() > 6) {
+                                u = db.getAllUserInfo(uids_of_searched_name.get(6));
+                            }
+
+                            db.recordFriendship(curr_user, u.uid);
+
+                        } catch (SQLException e) {
+                            
+                        }    
+
+                    });
+                    
+                    buttonToAddFriend8.setOnAction(ev -> {
+                            
+                        String search_firstname = SearchUserFirstNameField.getText();
+                        String search_lastname = SearchUserLastNameField.getText();
+                        List<Integer> uids_of_searched_name = new ArrayList<>();
+
+                        try{
+                            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+                            User u = null;
+
+                            if (uids_of_searched_name.size() > 7) {
+                                u = db.getAllUserInfo(uids_of_searched_name.get(7));
+                            }
+
+                            db.recordFriendship(curr_user, u.uid);
+
+                        } catch (SQLException e) {
+                            
+                        }    
+
+                    });
+
+                    buttonToAddFriend9.setOnAction(ev -> {
+                            
+                        String search_firstname = SearchUserFirstNameField.getText();
+                        String search_lastname = SearchUserLastNameField.getText();
+                        List<Integer> uids_of_searched_name = new ArrayList<>();
+
+                        try{
+                            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+                            User u = null;
+
+                            if (uids_of_searched_name.size() > 8) {
+                                u = db.getAllUserInfo(uids_of_searched_name.get(8));
+                            }
+
+                            db.recordFriendship(curr_user, u.uid);
+
+                        } catch (SQLException e) {
+                            
+                        }    
+
+                    });
+
+                    buttonToAddFriend10.setOnAction(ev -> {
+                            
+                        String search_firstname = SearchUserFirstNameField.getText();
+                        String search_lastname = SearchUserLastNameField.getText();
+                        List<Integer> uids_of_searched_name = new ArrayList<>();
+
+                        try{
+                            uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
+                            User u = null;
+
+                            if (uids_of_searched_name.size() > 9) {
+                                u = db.getAllUserInfo(uids_of_searched_name.get(9));
+                            }
+
+                            db.recordFriendship(curr_user, u.uid);
+
+                        } catch (SQLException e) {
+                            
+                        }    
+
+                    });
+
                     // go back to feedPage
                     GoBackSearchUsers.setOnAction(ev -> {
 
-                        sm.switchToFeed(false);
+                        sm.switchToFeed();
 
                     });
 
@@ -547,7 +794,7 @@ public class Main extends Application {
 
                     UserFriendsGoBack.setOnAction(ev -> {
 
-                        sm.switchToFeed(false);
+                        sm.switchToFeed();
 
                     });
 
@@ -606,7 +853,7 @@ public class Main extends Application {
 
                     FriendsOfUserGoBack.setOnAction(ev -> {
 
-                        sm.switchToFeed(false);
+                        sm.switchToFeed();
 
                     });
 
@@ -667,7 +914,7 @@ public class Main extends Application {
 
                     FriendsRecGoBack.setOnAction(ev -> {
 
-                        sm.switchToFeed(false);
+                        sm.switchToFeed();
 
                     });
 
@@ -900,7 +1147,7 @@ public class Main extends Application {
                             }
                             
                             if (success) {
-                                sm.switchToFeed(false);
+                                sm.switchToFeed();
                             }
 
                         });
@@ -910,7 +1157,7 @@ public class Main extends Application {
                     // go back to feedpage if goback button is pressed
                     UserPageGoBack.setOnAction(ev -> {
 
-                        sm.switchToFeed(false);
+                        sm.switchToFeed();
 
                     });
 
@@ -1021,7 +1268,7 @@ public class Main extends Application {
                     // go back to feedpage if goback button is pressed
                     SearchCommentsGoBack.setOnAction(ev -> {
 
-                        sm.switchToFeed(false);
+                        sm.switchToFeed();
 
                     });
 
@@ -1078,6 +1325,13 @@ public class Main extends Application {
 
                 // set scene
                 rootPaneSearchTags.setCenter(centerPaneSearchTags);
+                centerPaneSearchTags.add(TagSearch, 0, 0);
+                centerPaneSearchTags.add(TagSearchDirections, 0, 1);
+                centerPaneSearchTags.add(TagSearchButton, 0, 3);
+                centerPaneSearchTags.add(OwnTagPhotos, 0, 4);
+                centerPaneSearchTags.add(TagSearchGoBack, 0, 5);
+                centerPaneSearchTags.add(TagSearchField, 0, 2);
+
                 Scene SearchTagScene = new Scene(rootPaneSearchTags, 700, 600);
                 sm.searchTagsScene = SearchTagScene;
 
@@ -1323,6 +1577,13 @@ public class Main extends Application {
                     
                 }); 
 
+                // if go back button pressed, go back to feed
+                TagSearchGoBack.setOnAction(ev -> {
+
+                    sm.switchToFeed();
+
+                });
+
                 /*
                 //search this user's photos by multiple tags
                 String[] search_my_tags = new String[]{"best","light"};
@@ -1488,7 +1749,7 @@ public class Main extends Application {
 
                     MostPopTagsGoBack.setOnAction(ev -> {
 
-                       sm.switchToFeed(false); 
+                       sm.switchToFeed(); 
 
                     });
                     
