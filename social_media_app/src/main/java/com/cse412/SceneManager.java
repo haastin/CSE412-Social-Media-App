@@ -1,5 +1,6 @@
 package com.cse412;
 
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -264,7 +265,55 @@ public class SceneManager {
         vBox.setPadding(new Insets(10, 10, 10, 20));
         vBox.setSpacing(5);
         // vBox.setAlignment(Pos.CENTER);
-        vBox.getChildren().addAll(feed, hBox3, hBox, hBox2, numLikes);
+
+        Button likeButton = new Button("Like");
+        int this_pic_pid = random_pid;
+        likeButton.setOnAction(e -> {
+            if (likeButton.getText().equals("Like")) {
+                likeButton.setText("Liked");
+                try {
+                    Main.db.recordLike(this_pic_pid, Main.curr_user);
+                } catch (SQLException b) {
+                    b.printStackTrace();
+                }
+            }
+        });
+
+        // Create a button for commenting
+        Button commentButton = new Button("Comment");
+
+        // Set an action for the button
+        commentButton.setOnAction(event -> {
+            // Create a text input dialog for entering the caption
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Enter Caption");
+            dialog.setHeaderText(null);
+            dialog.setContentText("Caption:");
+
+            // Show the dialog and wait for the user to enter a caption
+            Optional<String> result = dialog.showAndWait();
+
+            // If the user entered a caption, add it to the comments list
+            result.ifPresent(new_caption -> {
+                try{
+                    Main.db.postComment(this_pic_pid, Main.curr_user, new_caption);
+                }catch(SQLException e){
+                    e.printStackTrace();
+                }
+
+                // code to add comment to database here
+            });
+        });
+
+        Button upload_button = new Button("Upload Image");
+
+        HBox hBox4 = new HBox();
+        hBox4.setPadding(new Insets(10, 10, 10, 10));
+        hBox4.setSpacing(20);
+        hBox4.setAlignment(Pos.CENTER);
+        hBox4.getChildren().addAll(next, upload_button);
+
+        vBox.getChildren().addAll(feed, hBox3, hBox, hBox2, numLikes, likeButton, commentButton, commentsListView, hBox4);
 
         /*
          * for (int i = 0; i < comments.size(); i++) {
@@ -273,7 +322,6 @@ public class SceneManager {
          * vBox.getChildren().add(new Label(comm));
          * }
          */
-        vBox.getChildren().add(commentsListView);
         rootPane2.setCenter(vBox);
 
         // Create a scene and place it in the stage
@@ -369,12 +417,8 @@ public class SceneManager {
             // primaryStage.setScene(scene1); // based on the scene name of the welcome pg
         });
 
-        // Create a Button object
-        Button button = new Button("Select Image");
-        rootPane2.setRight(button);
-
         // Set the action for the button
-        button.setOnAction(e -> {
+        upload_button.setOnAction(e -> {
             // Create a FileChooser object
             FileChooser fileChooser = new FileChooser();
 
@@ -706,12 +750,13 @@ public class SceneManager {
         YourPageWelcome.setTextFill(Color.HOTPINK);
         Button UserPageGoBack = new Button("Go Back");
         Button ChangeUserInfo = new Button("Change User Info");
-
+        Button createalbumButton = new Button("Create New Album");
         // add labels and such to panes
         rootPaneUserPage.setCenter(centerPaneUserPage);
         centerPaneUserPage.add(YourPageWelcome, 0, 0);
         centerPaneUserPage.add(UserPageGoBack, 0, 17);
         centerPaneUserPage.add(ChangeUserInfo, 0, 18);
+        centerPaneUserPage.add(createalbumButton, 0, 19);
 
         // create scene
         Scene UserPageScene = new Scene(rootPaneUserPage, 700, 600);
@@ -890,7 +935,7 @@ public class SceneManager {
                 String password_hashed = password_unhashed;
                 String hometown = HometownFieldChangeInfo.getText();
                 String dob = DOBFieldChangeInfo.getText();
-                
+
                 if (!password_unhashed.equals("********")) {
 
                     // hash the password given
@@ -917,7 +962,7 @@ public class SceneManager {
                 // try updating user info
                 boolean success = true;
                 try {
-                    
+
                     Main.db.updateUser(Main.curr_user, firstName, lastName, password_hashed, gender, hometown, dob);
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -931,6 +976,55 @@ public class SceneManager {
 
             });
 
+        });
+
+        // Set the on-click action for the button
+        createalbumButton.setOnAction(e -> {
+            // Create a new dialog for creating an album
+            Dialog<String> dialog = new Dialog<>();
+            dialog.setTitle("Create New Album");
+
+            // Set the buttons
+            ButtonType confirmButtonType = new ButtonType("Create", ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().addAll(confirmButtonType, ButtonType.CANCEL);
+
+            // Create the input fields
+            TextField albumNameField = new TextField();
+            albumNameField.setPromptText("Album Name");
+
+            // Add the input fields to the dialog
+            VBox vbox = new VBox();
+            vbox.getChildren().addAll(new Label("Enter the album name:"), albumNameField);
+            dialog.getDialogPane().setContent(vbox);
+
+            // Enable the Create button only when input is valid
+            Node createButton = dialog.getDialogPane().lookupButton(confirmButtonType);
+            createButton.setDisable(true);
+            albumNameField.textProperty().addListener((observable, oldValue, newValue) -> {
+                createButton.setDisable(newValue.trim().isEmpty());
+            });
+
+            // Convert the result to a new album name
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == confirmButtonType) {
+                    return albumNameField.getText().trim();
+                }
+                return null;
+            });
+
+            // Show the dialog and wait for the user to create a new album
+            Optional<String> result = dialog.showAndWait();
+
+            // Set the new_albumName variable if a new album was created
+
+            if (result.isPresent()) {
+                String newAlbumName = result.get();
+                try {
+                    Main.db.createAlbum(Main.curr_user, newAlbumName);
+                } catch (SQLException v) {
+                    v.printStackTrace();
+                }
+            }
         });
 
         // go back to feedpage if goback button is pressed

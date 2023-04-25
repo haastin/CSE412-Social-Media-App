@@ -1321,6 +1321,7 @@ public class Main extends Application {
                 }catch(SQLException e){
                     e.printStackTrace();
                 }
+            }
             /*for(Pair<Integer,Integer> pic : top_pics){
                     System.out.println(pic.getKey() + " matches " + pic.getValue() + " tags");
                 }       */
@@ -1329,37 +1330,7 @@ public class Main extends Application {
                 /*these vars need to be populated by labels/buttons above the db function calls, besides the holder for retrieved data 
                 (none here since nothing is returned by the db function */
                 /* 
-                int put_in_aid = 5210;
-                String new_caption = "im a gummy bear";
-                String new_url = "resources/com/cse412/test.jpg";
-                try{
-                db.createPhoto(put_in_aid, new_caption, new_url);
-                }
-                catch(SQLException e){
-                    e.printStackTrace();
-                }
-
-                String new_albumName = "miracles";
-                try{
-                    db.createAlbum(curr_user, new_albumName);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }
                 
-                int pid_commenting_on = 9990;
-                String new_comment_text = "";
-                try{
-                    db.postComment(pid_commenting_on, curr_user, new_comment_text);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }
-
-                int pid_liking = 9990;
-                try{
-                    db.recordLike(pid_liking, curr_user);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }
                 
                 String new_tag_word = "blah";
                 int pid_tagging = 9990;
@@ -1369,24 +1340,12 @@ public class Main extends Application {
                     e.printStackTrace();
                 }
 
-                int uid_of_user_you_want_friend = 1700;
-                try{
-                    db.recordFriendship(curr_user, uid_of_user_you_want_friend);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }*/
-
 
                 /* deletion.sql */
 
                 //coomented this out because it deletes the test user when trying to test all my functions
                 /* 
-                try{
-                db.deleteUser(curr_user);
-                }
-                catch(SQLException e){
-                    e.printStackTrace();
-                }
+                
                 
                 int deleting_aid = 5239;
                 try{
@@ -1395,82 +1354,14 @@ public class Main extends Application {
                     e.printStackTrace();
                 }
                 
-                int deleting_cid = 0;
-                try{
-                    db.deleteComment(deleting_cid, curr_user);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }
-
+                
                 int unlike_pid = 9990;
                 try{
                     db.deleteLike(curr_user, unlike_pid);
                 }catch(SQLException e){
                     e.printStackTrace();
                 }
-
-                int unfollow_uid = 1700;
-                try{
-                    db.unfollowUser(curr_user, unfollow_uid);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }
-
-                String delete_tag_word = "";
-                int delete_tag_from_pid = 9990;
-                try{
-                    db.deleteTag(delete_tag_from_pid, curr_user, delete_tag_word);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }*/
-
-                /* update.sql */
-                /*
-                String update_firstName = "";
-                String update_lastName = "";
-                String update_gender = "";
-                String update_hometown = "";
-                String update_dob = ""; //need to enforce (or convert ourselves) that this matches the format of a MySQL DATE type variable
-                try{
-                    db.updateUser(curr_user, update_firstName, update_lastName, update_gender, update_hometown, update_dob);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }
-
-                String new_photo_caption = "";
-                int pid_to_change = 9990;
-                try{
-                    db.updatePhoto(curr_user, pid_to_change, new_photo_caption);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }
-
-                String new_album_name = "";
-                int aid_to_change = 5210;
-                try{
-                    db.updateAlbum(curr_user, new_albumName, aid_to_change);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }
-
-                String old_word = "";
-                String new_word = "";
-                int pid_of_tag = 9990;
-                try{
-                    db.updateTag(curr_user, pid_of_tag, old_word, new_word);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }
-
-                String update_text = "";
-                int change_comment_on_pid = 9990;
-                int change_comment_cid = 1;
-                try{
-                    db.updateComment(curr_user, update_text, change_comment_on_pid, change_comment_cid);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }*/
-            }
+            }*/
             
         
     
