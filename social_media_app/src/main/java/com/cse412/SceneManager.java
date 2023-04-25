@@ -258,7 +258,7 @@ public class SceneManager {
         rootPane2.setBottom(next);
 
         HBox hBox3 = new HBox();
-        hBox3.setPadding(new Insets(10, 10, 10, 10));
+        hBox3.setPadding(new Insets(0, 10, 0, 10));
         hBox3.setSpacing(20);
         hBox3.setAlignment(Pos.CENTER);
         hBox3.getChildren().addAll(ownPhotos, suggest, logOut); // adding image to Hbox
@@ -315,7 +315,23 @@ public class SceneManager {
 
         tags_title.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
         tags_title.setTextFill(Color.BLACK);
-        tagsSection.getChildren().add(view);
+
+        Label poster = new Label(poster_firstname + " " + poster_lastname);
+
+        poster.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 20));
+        poster.setTextFill(Color.BLUEVIOLET);
+
+        Label cap = new Label(caption);
+
+        cap.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
+        cap.setTextFill(Color.CHOCOLATE);
+
+        HBox hBox6 = new HBox();
+        hBox6.setPadding(new Insets(0, 10, 0, 10));
+        hBox6.setSpacing(20);
+        hBox6.setAlignment(Pos.BOTTOM_LEFT);
+
+        tagsSection.getChildren().addAll(poster, view, cap);
         tagsSection.getChildren().add(tags_title);
         // Create the tag buttons
         for (Tag tag : tags) {
@@ -323,8 +339,10 @@ public class SceneManager {
             tagButton.setOnAction(event -> {
                 switchToTagSearch(false, tag.word);
             });
-            tagsSection.getChildren().add(tagButton);
+            hBox6.getChildren().add(tagButton);
         }
+
+        tagsSection.getChildren().add(hBox6);
 
         Button upload_button = new Button("Upload Image");
 
@@ -825,7 +843,7 @@ public class SceneManager {
         rootPane2.setBottom(next);
 
         HBox hBox3 = new HBox();
-        hBox3.setPadding(new Insets(10, 10, 10, 10));
+        hBox3.setPadding(new Insets(0, 10, 0, 10));
         hBox3.setSpacing(20);
         hBox3.setAlignment(Pos.CENTER);
         hBox3.getChildren().addAll(ownPhotos, logOut); // adding image to Hbox
@@ -882,7 +900,23 @@ public class SceneManager {
 
         tags_title.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
         tags_title.setTextFill(Color.BLACK);
-        tagsSection.getChildren().add(view);
+
+        Label poster = new Label(poster_firstname + " " + poster_lastname);
+
+        poster.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 20));
+        poster.setTextFill(Color.BLUEVIOLET);
+
+        Label cap = new Label(caption);
+
+        cap.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
+        cap.setTextFill(Color.CHOCOLATE);
+
+        HBox hBox6 = new HBox();
+        hBox6.setPadding(new Insets(0, 10, 0, 10));
+        hBox6.setSpacing(20);
+        hBox6.setAlignment(Pos.BOTTOM_LEFT);
+
+        tagsSection.getChildren().addAll(poster, view, cap);
         tagsSection.getChildren().add(tags_title);
         // Create the tag buttons
         for (Tag tag : tags) {
@@ -890,8 +924,11 @@ public class SceneManager {
             tagButton.setOnAction(event -> {
                 switchToTagSearch(false, tag.word);
             });
-            tagsSection.getChildren().add(tagButton);
+            hBox6.getChildren().add(tagButton);
         }
+
+        tagsSection.getChildren().add(hBox6);
+
 
         Button goBack = new Button("Go Back To Main Feed");
 
@@ -1097,7 +1134,7 @@ public class SceneManager {
         rootPane2.setBottom(next);
 
         HBox hBox3 = new HBox();
-        hBox3.setPadding(new Insets(10, 10, 10, 10));
+        hBox3.setPadding(new Insets(0, 10, 0, 10));
         hBox3.setSpacing(20);
         hBox3.setAlignment(Pos.CENTER);
         hBox3.getChildren().addAll(ownPhotos, logOut); // adding image to Hbox
@@ -1154,16 +1191,36 @@ public class SceneManager {
 
         tags_title.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
         tags_title.setTextFill(Color.BLACK);
-        tagsSection.getChildren().add(view);
+
+
+        Label poster = new Label(poster_firstname + " " + poster_lastname);
+
+        poster.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 20));
+        poster.setTextFill(Color.BLUEVIOLET);
+
+        Label cap = new Label(caption);
+
+        cap.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
+        cap.setTextFill(Color.CHOCOLATE);
+
+        HBox hBox6 = new HBox();
+        hBox6.setPadding(new Insets(0, 10, 0, 10));
+        hBox6.setSpacing(20);
+        hBox6.setAlignment(Pos.BOTTOM_LEFT);
+
+        tagsSection.getChildren().addAll(poster, view, cap);
         tagsSection.getChildren().add(tags_title);
         // Create the tag buttons
         for (Tag tag : tags) {
             Button tagButton = new Button(tag.word);
             tagButton.setOnAction(event -> {
-                switchToTagSearch(user_photos, word);
+                switchToTagSearch(false, tag.word);
             });
-            tagsSection.getChildren().add(tagButton);
+            hBox6.getChildren().add(tagButton);
         }
+
+        tagsSection.getChildren().add(hBox6);
+
 
         Button goBack = new Button("Go Back To Main Feed");
 
@@ -1769,7 +1826,7 @@ public class SceneManager {
 
         Label welcomeYMAL = new Label("You May Also Like");
 
-        welcomeYMAL.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
+        welcomeYMAL.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 20));
         welcomeYMAL.setTextFill(Color.HOTPINK);
 
         InputStream is = Main.class.getClassLoader().getResourceAsStream(url);
@@ -1848,13 +1905,13 @@ public class SceneManager {
         rootPane2.setBottom(next);
 
         HBox hBox5 = new HBox();
-        hBox5.setPadding(new Insets(10, 10, 10, 10));
+        hBox5.setPadding(new Insets(0, 10, 0, 10));
         hBox5.setSpacing(20);
         hBox5.setAlignment(Pos.CENTER);
         hBox5.getChildren().add(welcomeYMAL);
 
         HBox hBox3 = new HBox();
-        hBox3.setPadding(new Insets(10, 10, 10, 10));
+        hBox3.setPadding(new Insets(0, 10, 0, 10));
         hBox3.setSpacing(20);
         hBox3.setAlignment(Pos.CENTER);
         hBox3.getChildren().addAll(logOut); // adding image to Hbox
@@ -1911,7 +1968,23 @@ public class SceneManager {
 
         tags_title.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
         tags_title.setTextFill(Color.BLACK);
-        tagsSection.getChildren().add(view);
+
+        Label poster = new Label(poster_firstname + " " + poster_lastname);
+
+        poster.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 20));
+        poster.setTextFill(Color.BLUEVIOLET);
+
+        Label cap = new Label(caption);
+
+        cap.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
+        cap.setTextFill(Color.CHOCOLATE);
+
+        HBox hBox6 = new HBox();
+        hBox6.setPadding(new Insets(0, 10, 0, 10));
+        hBox6.setSpacing(20);
+        hBox6.setAlignment(Pos.BOTTOM_LEFT);
+
+        tagsSection.getChildren().addAll(poster, view, cap);
         tagsSection.getChildren().add(tags_title);
         // Create the tag buttons
         for (Tag tag : tags) {
@@ -1919,8 +1992,11 @@ public class SceneManager {
             tagButton.setOnAction(event -> {
                 switchToTagSearch(false, tag.word);
             });
-            tagsSection.getChildren().add(tagButton);
+            hBox6.getChildren().add(tagButton);
         }
+
+        tagsSection.getChildren().add(hBox6);
+
 
         Button goBack = new Button("Go Back To Main Feed");
 
