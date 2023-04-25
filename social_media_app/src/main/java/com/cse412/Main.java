@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.io.InputStream;
+
 
 public class Main extends Application {
 
@@ -53,6 +55,8 @@ public class Main extends Application {
     static SceneManager sm;
     static int curr_user; // we change this to be the logged in user
     boolean logged_in = false;
+    String tagToSearch;
+    boolean clickedOnTag = false;
 
     public void start(Stage primaryStage) throws NoSuchAlgorithmException {
 
@@ -280,7 +284,7 @@ public class Main extends Application {
                 } catch (NoSuchAlgorithmException e) {
                     System.out.println("No Such Algorithm Exception Thrown");
                 }
-                System.out.println(password_hashed.length());
+
                 /* check if this email exists */
                 boolean emailExists = true;
                 try{
@@ -296,7 +300,6 @@ public class Main extends Application {
 
                     }
                 } catch(SQLException e){
-                    e.printStackTrace();
                     ErrorMessage.setText("Invalid Email and/or Date of Birth Format. Try again.");
                 }
 
@@ -1022,7 +1025,7 @@ public class Main extends Application {
 
                     });
 
-
+                /*
                 //search for currently logged in user's photos that have a certain tag
                 String search_my_tag = "best";
                 List<Integer> my_photos_with_tag = new ArrayList<>();
@@ -1034,7 +1037,7 @@ public class Main extends Application {
                 /*for (Integer match : my_photos_with_tag) {
                     System.out.print(match + " ");
                 }*/
-
+                /* 
                 //search all photos that have a certain tag
                 String search_all_tag = "";
                 List<Integer> all_photos_with_tag = new ArrayList<>();
@@ -1047,6 +1050,280 @@ public class Main extends Application {
                     System.out.print(match + " ");
                 }*/
 
+            
+            /* search for photos via tags */
+
+                BorderPane rootPaneSearchTags = new BorderPane();
+                GridPane centerPaneSearchTags = new GridPane();
+
+                centerPaneSearchTags.setAlignment(Pos.CENTER); // centered alignment
+                centerPaneSearchTags.setPadding(new Insets(1, 1, 1, 1)); // this is the spacing from the perimeter of the window
+                centerPaneSearchTags.setHgap(10); // the spacing between objects horizontally
+                centerPaneSearchTags.setVgap(10); // the spacing between objects horizontally
+
+                Label TagSearch = new Label("Filter Photos via Tag");
+                Label TagSearchDirections = new Label("Separate tags by space as so: red blue green yellow orange");
+                TagSearch.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
+                TagSearch.setTextFill(Color.HOTPINK);
+
+                Button TagSearchButton = new Button("Search");
+                Button OwnTagPhotos = new Button("View Only Your Photos Via Tag");
+                Button TagSearchGoBack = new Button("Go Back");
+                TextField TagSearchField = new TextField();
+                
+                // if someone clicked on a tag, fill the tag search bar with the tag
+                if (clickedOnTag) {
+                    TagSearchField.setText(tagToSearch);
+                }
+
+                // set scene
+                rootPaneSearchTags.setCenter(centerPaneSearchTags);
+                Scene SearchTagScene = new Scene(rootPaneSearchTags, 700, 600);
+                sm.searchTagsScene = SearchTagScene;
+
+                List<String> tags_to_search = new ArrayList<>();
+                int photoToGetOthers = 0;
+                int photoToGetOwn = 0;
+                boolean showingOwnPhotos = false; 
+
+                TagSearchButton.setOnAction(ev -> {
+
+                    // extract tags from search field
+                    String tagsFieldResult = TagSearchField.getText();
+                    int n = 0;
+                    for (int m = 0; m < tagsFieldResult.length(); m++) {
+                        
+                        if (tagsFieldResult.substring(m, m + 1).equals(" ")) {
+                            tags_to_search.add(tagsFieldResult.substring(n, m));
+                            n = m + 1;
+                        } else if (m >= tagsFieldResult.length() - 1) {
+                            tags_to_search.add(tagsFieldResult.substring(n, m + 1));
+                        }
+
+                    }
+
+                    // populate an array with list of tags
+                    String[] search_all_tags = new String[tags_to_search.size()];
+                    n = 0;
+                    for (String tag : tags_to_search) {
+                        search_all_tags[n] = tag;
+                        n++;
+                    }
+
+                    //search all photos (not this user's) by multiple tags
+                    List<Integer> all_photos_with_tags = new ArrayList<>();
+                    if (!showingOwnPhotos) {
+                        try{
+                            all_photos_with_tags = db.getPhotosByMultipleTags(search_all_tags, curr_user);
+                        }catch(SQLException e){
+                            e.printStackTrace();
+                        }
+                    } else {
+                        try{
+                            all_photos_with_tags = db.getPhotosByMultipleTagsAndUser(search_all_tags, curr_user);
+                        }catch(SQLException e){
+                            e.printStackTrace();
+                        }
+                    }
+
+                    
+                    String url = "";
+                    String poster_firstname = "";
+                    String poster_lastname = "";
+                    String caption = "";
+                    List<Tag> tags = new ArrayList<>();
+                    List<Pair<String, Comment>> comments = new ArrayList<>();
+
+                    List<User> likers = new ArrayList<>();
+                    int total_likes = 0;
+                    User poster = new User();;
+                    Photo pic = new Photo();
+
+                    if (!showingOwnPhotos) {
+                        try {
+                            pic = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOthers));
+                            comments = Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOthers));
+                            likers = Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOthers));
+                            tags = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOthers));
+                            poster = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOthers));
+                        } catch (SQLException e) {
+
+                        }
+                    } else {
+                        try {
+                            pic = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOwn));
+                            comments = Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOwn));
+                            likers = Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOwn));
+                            tags = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOwn));
+                            poster = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOwn));
+                        } catch (SQLException e) {
+
+                        }
+                    }
+
+                    poster_firstname = poster.firstName;
+                    poster_lastname = poster.lastName;
+
+                    caption = pic.caption;
+                    url = pic.url;
+
+                    total_likes = likers.size();
+                    
+                    InputStream is = Main.class.getClassLoader().getResourceAsStream(url);
+                    Image image = new Image(is);
+
+                    ImageView view = new ImageView(image);
+
+                    view.setX(25);
+                    view.setY(25);
+
+                    view.setFitHeight(100);
+                    view.setFitWidth(100);
+
+                    view.setPreserveRatio(true);
+
+                    Label comment0 = new Label("Comments");
+
+                    comment0.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+                    comment0.setTextFill(Color.INDIGO);
+
+                    Label comment1 = new Label("");
+                    comment1.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
+                    comment1.setTextFill(Color.BLACK);
+                    
+                    Label numLikes = new Label(total_likes + " Likes");  // NOT SURE WHERE TO GET LIKES FROM
+
+                    numLikes.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+                    numLikes.setTextFill(Color.TEAL);
+
+                    HBox hBox2 = new HBox();
+                    hBox2.setPadding(new Insets(10, 10, 10, 10));
+                    hBox2.setSpacing(5);
+
+                    hBox2.setAlignment(Pos.CENTER_RIGHT);
+                    hBox2.getChildren().add(view);
+
+                    Button next = new Button("Next pic");
+                    next.setMaxSize(100.0, 100.0);
+                    rootPaneSearchTags.setBottom(next);
+
+                    VBox vBox = new VBox();
+                    vBox.setPadding(new Insets(10, 10, 10, 20));
+                    vBox.setSpacing(5);
+                    // vBox.setAlignment(Pos.CENTER);
+                    vBox.getChildren().addAll(hBox2, numLikes, comment0, comment1);
+
+                    for (int p = 0; p < comments.size(); p++) {
+                        Pair<String, Comment> full_comment = comments.get(p);
+                        String comm = full_comment.getKey() + " " + full_comment.getValue().text;
+                        vBox.getChildren().add(new Label(comm));
+                    }
+
+                    Scene showPhotosViaTagFilterScene = new Scene(rootPaneSearchTags, 700, 600);
+                    primaryStage.setTitle("Social Media App");
+                    primaryStage.setScene(showPhotosViaTagFilterScene);
+                    primaryStage.show();
+
+                    next.setOnAction(eve -> {
+                        /*
+                        String urlNext = "";
+                        String poster_firstnameNext = "";
+                        String poster_lastnameNext = "";
+                        String captionNext = "";
+                        List<Tag> tagsNext = new ArrayList<>();
+                        List<Pair<String, Comment>> commentsNext = new ArrayList<>();
+
+                        List<User> likersNext = new ArrayList<>();
+                        int total_likesNext = 0;
+                        User posterNext = new User();;
+                        Photo picNext = new Photo();
+
+                        if (!showingOwnPhotos) {
+                            try {
+                                picNext = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOthers + 1));
+                                commentsNext = Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOthers + 1));
+                                likersNext = Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOthers + 1));
+                                tagsNext = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOthers + 1));
+                                posterNext = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOthers + 1));
+                            } catch (SQLException e) {
+
+                            }
+                        } else {
+                            try {
+                                picNext = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOwn + 1));
+                                commentsNext = Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOwn + 1));
+                                likersNext = Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOwn + 1));
+                                tagsNext = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOwn + 1));
+                                posterNext = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOwn + 1));
+                            } catch (SQLException e) {
+
+                            }
+                        }
+
+                        poster_firstnameNext = posterNext.firstName;
+                        poster_lastnameNext = posterNext.lastName;
+
+                        captionNext = picNext.caption;
+                        urlNext = picNext.url;
+
+                        total_likesNext = likersNext.size();
+                        
+                        InputStream isNext = Main.class.getClassLoader().getResourceAsStream(urlNext);
+                        Image imageNext = new Image(isNext);
+
+                        ImageView viewNext = new ImageView(imageNext);
+
+                        viewNext.setX(25);
+                        viewNext.setY(25);
+
+                        viewNext.setFitHeight(100);
+                        viewNext.setFitWidth(100);
+
+                        viewNext.setPreserveRatio(true);
+
+                        Label comment0Next = new Label("Comments");
+
+                        comment0Next.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+                        comment0Next.setTextFill(Color.INDIGO);
+
+                        Label comment1Next = new Label("");
+                        comment1Next.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
+                        comment1Next.setTextFill(Color.BLACK);
+                        
+                        Label numLikesNext = new Label(total_likesNext + " Likes");  // NOT SURE WHERE TO GET LIKES FROM
+
+                        numLikesNext.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+                        numLikesNext.setTextFill(Color.TEAL);
+
+                        HBox hBox2Next = new HBox();
+                        hBox2Next.setPadding(new Insets(10, 10, 10, 10));
+                        hBox2Next.setSpacing(5);
+
+                        hBox2Next.setAlignment(Pos.CENTER_RIGHT);
+                        hBox2Next.getChildren().add(view);
+
+                        VBox vBoxNext = new VBox();
+                        vBoxNext.setPadding(new Insets(10, 10, 10, 20));
+                        vBoxNext.setSpacing(5);
+                        // vBox.setAlignment(Pos.CENTER);
+                        vBoxNext.getChildren().addAll(hBox2Next, numLikesNext, comment0Next, comment1Next);
+
+                        for (int p = 0; p < comments.size(); p++) {
+                            Pair<String, Comment> full_comment = comments.get(p);
+                            String comm = full_comment.getKey() + " " + full_comment.getValue().text;
+                            vBox.getChildren().add(new Label(comm));
+                        }
+
+                        Scene showPhotosViaTagFilterSceneNext = new Scene(rootPaneSearchTags, 700, 600);
+                        primaryStage.setTitle("Social Media App");
+                        primaryStage.setScene(showPhotosViaTagFilterSceneNext);
+                        primaryStage.show();
+                        */
+                    });
+                    
+                }); 
+
+                /*
                 //search this user's photos by multiple tags
                 String[] search_my_tags = new String[]{"best","light"};
                 List<Integer> my_photos_with_tags = new ArrayList<>();
@@ -1059,19 +1336,7 @@ public class Main extends Application {
                     System.out.print(match + " ");
                 }*/
 
-                //search all photos (not this user's) by multiple tags
-                String[] search_all_tags = new String[]{"best","light"};
-                List<Integer> all_photos_with_tags = new ArrayList<>();
-                try{
-                    all_photos_with_tags = db.getPhotosByMultipleTags(search_all_tags, curr_user);
-                }catch(SQLException e){
-                    e.printStackTrace();
-                }
-                /*for (Integer match : all_photos_with_tags) {
-                    System.out.print(match + " ");
-                }*/
-
-                /* most popular tags */
+            /* most popular tags */
 
                     // render a page to show friend recommendations
                     BorderPane rootPaneMostPopTags = new BorderPane();
@@ -1123,9 +1388,11 @@ public class Main extends Application {
                     }
 
                     i = 1;
+                    String[] tags = new String[10];
                     for (String tag: most_popular_tags) {
 
                         centerPaneMostPopTags.add(new Label(tag), 0, i);
+                        tags[i - 1] = tag;
                         i++;
 
                         if (i >= 11) {
@@ -1135,6 +1402,89 @@ public class Main extends Application {
                     }
 
                     sm.mostPopTagsScene = MostPopTagsScene;
+
+                    /* if a tag is selected, switch to photos of tag */
+
+                    MostPopTag1Button.setOnAction(ev -> {
+
+                        tagToSearch = tags[0];
+                        clickedOnTag = true;
+                        sm.switchToTagSearch();
+
+                    });
+
+                    MostPopTag2Button.setOnAction(ev -> {
+
+                        tagToSearch = tags[1];
+                        clickedOnTag = true;
+                        sm.switchToTagSearch();
+
+                    });
+
+                    MostPopTag3Button.setOnAction(ev -> {
+
+                        tagToSearch = tags[2];
+                        clickedOnTag = true;
+                        sm.switchToTagSearch();
+
+                    });
+
+                    MostPopTag4Button.setOnAction(ev -> {
+
+                        tagToSearch = tags[3];
+                        clickedOnTag = true;
+                        sm.switchToTagSearch();
+
+                    });
+
+                    MostPopTag5Button.setOnAction(ev -> {
+
+                        tagToSearch = tags[4];
+                        clickedOnTag = true;
+                        sm.switchToTagSearch();
+
+                    });
+
+                    MostPopTag6Button.setOnAction(ev -> {
+
+                        tagToSearch = tags[5];
+                        clickedOnTag = true;
+                        sm.switchToTagSearch();
+
+                    });
+
+                    MostPopTag7Button.setOnAction(ev -> {
+
+                        tagToSearch = tags[6];
+                        clickedOnTag = true;
+                        sm.switchToTagSearch();
+
+                    });
+
+                    MostPopTag8Button.setOnAction(ev -> {
+
+                        tagToSearch = tags[7];
+                        clickedOnTag = true;
+                        sm.switchToTagSearch();
+
+                    });
+
+                    MostPopTag9Button.setOnAction(ev -> {
+
+                        tagToSearch = tags[8];
+                        clickedOnTag = true;
+                        sm.switchToTagSearch();
+
+                    });
+
+                    MostPopTag10Button.setOnAction(ev -> {
+
+                        tagToSearch = tags[9];
+                        clickedOnTag = true;
+                        sm.switchToTagSearch();
+
+                    });
+
 
                     MostPopTagsGoBack.setOnAction(ev -> {
 
