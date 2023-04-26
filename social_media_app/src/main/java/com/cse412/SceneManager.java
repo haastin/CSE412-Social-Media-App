@@ -262,12 +262,31 @@ public class SceneManager {
         hBox3.setPadding(new Insets(0, 10, 0, 10));
         hBox3.setSpacing(20);
         hBox3.setAlignment(Pos.CENTER);
-        hBox3.getChildren().addAll(ownPhotos, suggest, logOut); // adding image to Hbox
+        Button deleteThisPhoto = new Button("Delete This Photo");
+        
+        if (!user_photos) {
+            hBox3.getChildren().addAll(ownPhotos, suggest, logOut); // adding image to Hbox
+        } else {
+            hBox3.getChildren().addAll(ownPhotos, suggest, deleteThisPhoto, logOut); // adding image to Hbox
+        }
 
         VBox vBox = new VBox();
         vBox.setPadding(new Insets(10, 10, 10, 20));
         vBox.setSpacing(5);
         // vBox.setAlignment(Pos.CENTER);
+
+        final int random_pid_temp = random_pid;
+        deleteThisPhoto.setOnAction(ev -> {
+
+            try {
+                Main.db.deletePhoto(random_pid_temp, Main.curr_user);
+            } catch (SQLException e) {
+                
+            }
+
+            deleteThisPhoto.setText("Photo Deleted");
+
+        });
 
         Button likeButton = new Button("Like");
         int this_pic_pid = random_pid;
@@ -1599,7 +1618,26 @@ public class SceneManager {
         int i = 7;
         for (Album album : this_users_albums) {
 
-            centerPaneUserPage.add(new Label(album.albumName), 0, i);
+            Label albumName = new Label(album.albumName);
+            centerPaneUserPage.add(albumName, 0, i);
+            Button deleteAlbumButton = new Button("Delete Album");
+            centerPaneUserPage.add(deleteAlbumButton, 1, i);
+
+            // delete album when this button is pressed
+            deleteAlbumButton.setOnAction(ev ->{
+
+                try {
+                    Main.db.deleteAlbum(album.aid, target_user_uid);
+                } catch (SQLException e) {
+
+                }
+
+                // remove label
+                albumName.setText("");
+                deleteAlbumButton.setText("Removed");
+
+            });
+
             i++;
 
             if (i >= 17) {
