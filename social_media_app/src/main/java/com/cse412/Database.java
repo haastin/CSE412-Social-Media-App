@@ -53,7 +53,7 @@ public class Database {
         stmt.setInt(1, uid);
         ResultSet rs = stmt.executeQuery();
         List<Album> albums = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             Album album = new Album();
             album.aid = rs.getInt("aid");
             album.albumName = rs.getString("albumName");
@@ -70,12 +70,12 @@ public class Database {
         stmt.setInt(1, aid);
         ResultSet rs = stmt.executeQuery();
         List<Integer> pics = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             pics.add(rs.getInt("p.pid"));
         }
         return pics;
     }
-    
+
     List<Integer> getAllPhotosOfLoggedInUser(int uid) throws SQLException {
 
         String query = "SELECT pid FROM Photos AS p, Albums AS a WHERE p.aid = a.aid AND a.uid = ?";
@@ -83,7 +83,7 @@ public class Database {
         stmt.setInt(1, uid);
         ResultSet rs = stmt.executeQuery();
         List<Integer> pics = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             pics.add(rs.getInt("pid"));
         }
         return pics;
@@ -97,7 +97,7 @@ public class Database {
         stmt.setInt(1, uid);
         ResultSet rs = stmt.executeQuery();
         User user = new User();
-        while(rs.next()){
+        while (rs.next()) {
             user.firstName = rs.getString("firstName");
             user.lastName = rs.getString("lastName");
             user.dob = rs.getString("dob");
@@ -105,18 +105,19 @@ public class Database {
             user.gender = rs.getString("gender");
             user.hashPass = rs.getString("password");
             user.hometown = rs.getString("hometown");
+            user.uid = uid;
 
         }
         return user;
     }
 
-    List<Friend> getAllUsersFriend(int uid) throws SQLException{
+    List<Friend> getAllUsersFriend(int uid) throws SQLException {
         String query = "SELECT fid, uid, whenFriends FROM Friends WHERE uid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, uid);
         ResultSet rs = stmt.executeQuery();
         List<Friend> friends = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             Friend friend = new Friend();
             friend.uid = rs.getInt("uid");
             friend.fid = rs.getInt("fid");
@@ -126,13 +127,13 @@ public class Database {
         return friends;
     }
 
-    List<Friend> getUsersWhoHaveTargetUserAsFriend(int uid) throws SQLException{
+    List<Friend> getUsersWhoHaveTargetUserAsFriend(int uid) throws SQLException {
         String query = "SELECT uid, fid, whenFriends FROM Friends WHERE fid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, uid);
         ResultSet rs = stmt.executeQuery();
         List<Friend> friends = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             Friend friend = new Friend();
             friend.uid = rs.getInt("uid");
             friend.fid = rs.getInt("fid");
@@ -149,10 +150,10 @@ public class Database {
         PreparedStatement stmt = conn.prepareStatement(query);
         ResultSet rs = stmt.executeQuery();
         List<Pair<Integer, Integer>> allnumphotos = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             Integer uid = (Integer) rs.getInt(2);
             Integer count = (Integer) rs.getInt(1);
-            Pair<Integer,Integer> numphotos = new Pair<Integer,Integer>(uid, count);
+            Pair<Integer, Integer> numphotos = new Pair<Integer, Integer>(uid, count);
             allnumphotos.add(numphotos);
         }
         return allnumphotos;
@@ -164,10 +165,10 @@ public class Database {
         PreparedStatement stmt = conn.prepareStatement(query);
         ResultSet rs = stmt.executeQuery();
         List<Pair<Integer, Integer>> allnumcomments = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             Integer uid = rs.getInt(2);
             Integer count = rs.getInt(1);
-            Pair<Integer, Integer> numcomments = new Pair<Integer,Integer>(uid, count);
+            Pair<Integer, Integer> numcomments = new Pair<Integer, Integer>(uid, count);
             allnumcomments.add(numcomments);
         }
         return allnumcomments;
@@ -189,7 +190,7 @@ public class Database {
         stmt.setInt(10, uids[9]);
         ResultSet rs = stmt.executeQuery();
         List<User> toptenusers = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             User user = new User();
             user.firstName = rs.getString("firstName");
             user.lastName = rs.getString("lastName");
@@ -200,14 +201,26 @@ public class Database {
     }
 
     /* creating_entries */
-    public void createPhoto(int aid, String caption, String url) throws SQLException {
+    public int createPhoto(int aid, String caption, String url) throws SQLException {
 
         String query = "INSERT INTO Photos (aid, caption, url) VALUES (?, ?, ?)";
-        PreparedStatement stmt = conn.prepareStatement(query);
+        
+        PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         stmt.setInt(1, aid);
         stmt.setString(2, caption);
         stmt.setString(3, url);
         stmt.executeUpdate();
+
+        ResultSet rs = stmt.getGeneratedKeys();
+        rs.next();
+        int pid = rs.getInt(1);
+
+        // Close the statement and result set
+        stmt.close();
+        rs.close();
+
+        // Return the pid of the newly created photo
+        return pid;
     }
 
     public void createAlbum(int uid, String albumName) throws SQLException {
@@ -344,16 +357,14 @@ public class Database {
         stmt.setString(1, firstName);
         stmt.setString(2, lastName);
         stmt.setString(3, password);
-        if(gender.isBlank()){
+        if (gender.isBlank()) {
             stmt.setNull(4, java.sql.Types.VARCHAR);
-        }
-        else{
+        } else {
             stmt.setString(4, gender);
         }
-        if(hometown.isBlank()){
+        if (hometown.isBlank()) {
             stmt.setNull(5, java.sql.Types.VARCHAR);
-        }
-        else{
+        } else {
             stmt.setString(5, hometown);
         }
         stmt.setString(6, email);
@@ -371,7 +382,7 @@ public class Database {
         stmt.setString(2, lastName);
         ResultSet rs = stmt.executeQuery();
         List<Integer> uids = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             uids.add(rs.getInt("u.uid"));
         }
         return uids;
@@ -384,7 +395,7 @@ public class Database {
         stmt.setInt(1, uid);
         ResultSet rs = stmt.executeQuery();
         List<Integer> uids = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             uids.add(rs.getInt("f.fid"));
         }
         return uids;
@@ -397,7 +408,7 @@ public class Database {
         stmt.setInt(1, fid);
         ResultSet rs = stmt.executeQuery();
         List<Integer> uids = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             uids.add(rs.getInt("f.uid"));
         }
         return uids;
@@ -411,7 +422,7 @@ public class Database {
         stmt.setInt(2, uid);
         ResultSet rs = stmt.executeQuery();
         List<Integer> uids = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             uids.add(rs.getInt("f2.fid"));
         }
         return uids;
@@ -424,12 +435,12 @@ public class Database {
         stmt.setInt(1, photoID);
         ResultSet rs = stmt.executeQuery();
         Photo photo = new Photo();
-        while(rs.next()){
-           photo.url = rs.getString("url");
-           photo.caption = rs.getString("caption");
-           photo.pid = rs.getInt("pid");
+        while (rs.next()) {
+            photo.url = rs.getString("url");
+            photo.caption = rs.getString("caption");
+            photo.pid = rs.getInt("pid");
         }
-        
+
         return photo;
     }
 
@@ -439,7 +450,7 @@ public class Database {
         stmt.setInt(1, photoID);
         ResultSet rs = stmt.executeQuery();
         User user = new User();
-        while(rs.next()){
+        while (rs.next()) {
             user.firstName = rs.getString("firstName");
             user.lastName = rs.getString("lastName");
             user.uid = rs.getInt("uid");
@@ -453,7 +464,7 @@ public class Database {
         stmt.setInt(1, photoID);
         ResultSet rs = stmt.executeQuery();
         List<User> users = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             User user = new User();
             user.firstName = rs.getString("firstName");
             user.lastName = rs.getString("lastName");
@@ -469,14 +480,14 @@ public class Database {
         stmt.setInt(1, photoID);
         ResultSet rs = stmt.executeQuery();
         List<Pair<String, Comment>> comments = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             Comment comment = new Comment();
-            comment.text = rs.getString("c.text"); 
+            comment.text = rs.getString("c.text");
             comment.date = rs.getString("c.date");
             comment.cid = rs.getInt("c.cid");
             comment.uid = rs.getInt("c.uid");
             String commenter = rs.getString("u.firstName") + " " + rs.getString("u.lastName");
-            Pair<String, Comment> full_comment = new Pair<String,Comment>(commenter, comment);
+            Pair<String, Comment> full_comment = new Pair<String, Comment>(commenter, comment);
             comments.add(full_comment);
         }
         return comments;
@@ -488,7 +499,7 @@ public class Database {
         stmt.setInt(1, photoID);
         ResultSet rs = stmt.executeQuery();
         List<Tag> tags = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             Tag tag = new Tag(rs.getString("word"), rs.getInt("pid"));
             tags.add(tag);
         }
@@ -506,14 +517,14 @@ public class Database {
         statement.setString(1, text);
         ResultSet rs = statement.executeQuery();
         List<List<Object>> comments = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             List<Object> row = new ArrayList<>();
             String first_last = rs.getString("firstName") + " " + rs.getString("lastName");
             Comment comment = new Comment();
             comment.text = rs.getString("text");
             row.add(first_last);
             row.add(comment);
-            Integer count = (Integer) rs.getInt(4); 
+            Integer count = (Integer) rs.getInt(4);
             row.add(count);
             comments.add(row);
         }
@@ -521,7 +532,7 @@ public class Database {
 
     }
 
-    public List<User> searchUserByName(String firstName, String lastName) throws SQLException{
+    public List<User> searchUserByName(String firstName, String lastName) throws SQLException {
 
         String query = "SELECT * FROM Users as u WHERE u.firstName = ? AND u.lastName = ?";
         PreparedStatement statement = conn.prepareStatement(query);
@@ -529,7 +540,7 @@ public class Database {
         statement.setString(2, lastName);
         ResultSet rs = statement.executeQuery();
         List<User> matching_users = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             User user = new User();
             user.firstName = rs.getString("firstName");
             user.lastName = rs.getString("lastName");
@@ -549,7 +560,7 @@ public class Database {
         statement.setInt(2, uid);
         ResultSet rs = statement.executeQuery();
         List<Integer> pids = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             pids.add(rs.getInt("t.pid"));
         }
         return pids;
@@ -565,7 +576,7 @@ public class Database {
         statement.setString(2, tag);
         ResultSet rs = statement.executeQuery();
         List<Integer> pids = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             pids.add(rs.getInt("pid"));
         }
         return pids;
@@ -591,7 +602,7 @@ public class Database {
         statement.setInt(tags.length + 2, tags.length);
         ResultSet rs = statement.executeQuery();
         List<Integer> pids = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             pids.add(rs.getInt("t.pid"));
         }
         return pids;
@@ -617,7 +628,7 @@ public class Database {
         statement.setInt(tags.length + 2, tags.length);
         ResultSet rs = statement.executeQuery();
         List<Integer> pids = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             pids.add(rs.getInt("t.pid"));
         }
         return pids;
@@ -631,68 +642,73 @@ public class Database {
         PreparedStatement statement = conn.prepareStatement(query);
         ResultSet rs = statement.executeQuery();
         List<String> tags = new ArrayList<>();
-        while(rs.next()){
+        while (rs.next()) {
             tags.add(rs.getString("t.word"));
         }
         return tags;
     }
 
-    //dont think we need this as getPhotoIDsByTag does the same thing
-    /*public List<Integer> getPhotoIdsByTagWord(String tagWord) throws SQLException {
-        String query = "SELECT t.pid "
-                + "FROM Tags as t "
-                + "WHERE t.word = ?";
-        PreparedStatement statement = conn.prepareStatement(query);
-        statement.setString(1, tagWord);
-        ResultSet rs = statement.executeQuery();
-        List<Integer> pids = new ArrayList<>();
-        while(rs.next()){
-            pids.add(rs.getInt("pid"));
-        }
-        return pids;
-    }*/
+    // dont think we need this as getPhotoIDsByTag does the same thing
+    /*
+     * public List<Integer> getPhotoIdsByTagWord(String tagWord) throws SQLException
+     * {
+     * String query = "SELECT t.pid "
+     * + "FROM Tags as t "
+     * + "WHERE t.word = ?";
+     * PreparedStatement statement = conn.prepareStatement(query);
+     * statement.setString(1, tagWord);
+     * ResultSet rs = statement.executeQuery();
+     * List<Integer> pids = new ArrayList<>();
+     * while(rs.next()){
+     * pids.add(rs.getInt("pid"));
+     * }
+     * return pids;
+     * }
+     */
 
     /* update.sql */
 
     // Update user info (given logged in user's uid what fields they want to change
     // (not all fields may be changed by a user, in which case the old values are
     // just passed in)
-    public void updateUser(int uid, String firstName, String lastName, String gender, String hometown, String dob)
+    public void updateUser(int uid, String firstName, String lastName, String hash_pass, String gender, String hometown,
+            String dob)
             throws SQLException {
-        String query = "UPDATE Users AS u SET firstName = ?, lastName = ?, gender = ?, hometown = ?, dob = ? WHERE u.uid = ?";
+        String query = "UPDATE Users AS u SET firstName = ?, lastName = ?, dob = ?";
+
+        int added_stuff = 4;
+        if (gender != null) {
+            query = query + ", gender = ?";
+        }
+
+        if (hometown != null) {
+            query = query + ", hometown = ?";
+        }
+
+        if (!hash_pass.equals("********")) {
+            System.out.println(" insert pass " + hash_pass);
+            query = query + ", password = ?";
+        }
+
+        query = query + " WHERE u.uid = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
-        if(firstName.isBlank()){
-            stmt.setNull(1, java.sql.Types.VARCHAR);
+        stmt.setString(1, firstName);
+        stmt.setString(2, lastName);
+        stmt.setString(3, dob);
+        if (gender != null) {
+            stmt.setString(added_stuff, gender);
+            added_stuff++;
         }
-        else{
-            stmt.setString(1, firstName);
+        if (hometown != null) {
+            stmt.setString(added_stuff, hometown);
+            added_stuff++;
         }
-        if(lastName.isBlank()){
-            stmt.setNull(2, java.sql.Types.VARCHAR);
+        if (!hash_pass.equals("********")) {
+            stmt.setString(added_stuff, hash_pass);
+            added_stuff++;
         }
-        else{
-            stmt.setString(2, lastName);
-        }
-        
-        if(gender.isBlank()){
-            stmt.setNull(3, java.sql.Types.VARCHAR);
-        }
-        else{
-            stmt.setString(3, gender);
-        }
-        if(hometown.isBlank()){
-            stmt.setNull(4, java.sql.Types.VARCHAR);
-        }
-        else{
-            stmt.setString(4, hometown);
-        }
-        if(dob.isBlank()){
-            stmt.setNull(5, java.sql.Types.DATE);
-        }
-        else{
-            stmt.setString(5, dob);
-        }
-        stmt.setInt(6, uid);
+
+        stmt.setInt(added_stuff, uid);
         stmt.executeUpdate();
     }
 
@@ -741,34 +757,34 @@ public class Database {
     }
 
     /* you_may_also_like.sql */
-    List<Pair<Integer,Integer>> getTopTagsForUser(int uid) throws SQLException {
+    List<Pair<Integer, Integer>> getTopTagsForUser(int uid) throws SQLException {
         String query = "SELECT t1.pid, COUNT(*) " +
-                  "FROM Tags AS t1 " +
-                  "INNER JOIN (" +
-                  "  SELECT t2.word " +
-                  "  FROM Tags AS t2 " +
-                  "  INNER JOIN (" +
-                  "    SELECT p.pid " +
-                  "    FROM Photos AS p " +
-                  "    INNER JOIN Albums AS a ON p.aid = a.aid " +
-                  "    WHERE a.uid = ?" +
-                  "  ) AS t3 ON t2.pid = t3.pid " +
-                  "  GROUP BY t2.word " +
-                  "  ORDER BY COUNT(*) DESC " +
-                  "  LIMIT 5" +
-                  ") AS t4 ON t1.word = t4.word " +
-                  "INNER JOIN Photos AS ph ON ph.pid = t1.pid " +
-                  "INNER JOIN Albums AS ab ON ph.aid = ab.aid " +
-                  "WHERE ab.uid != ? " +
-                  "GROUP BY t1.pid " +
-                  "ORDER BY COUNT(*) DESC";
+                "FROM Tags AS t1 " +
+                "INNER JOIN (" +
+                "  SELECT t2.word " +
+                "  FROM Tags AS t2 " +
+                "  INNER JOIN (" +
+                "    SELECT p.pid " +
+                "    FROM Photos AS p " +
+                "    INNER JOIN Albums AS a ON p.aid = a.aid " +
+                "    WHERE a.uid = ?" +
+                "  ) AS t3 ON t2.pid = t3.pid " +
+                "  GROUP BY t2.word " +
+                "  ORDER BY COUNT(*) DESC " +
+                "  LIMIT 5" +
+                ") AS t4 ON t1.word = t4.word " +
+                "INNER JOIN Photos AS ph ON ph.pid = t1.pid " +
+                "INNER JOIN Albums AS ab ON ph.aid = ab.aid " +
+                "WHERE ab.uid != ? " +
+                "GROUP BY t1.pid " +
+                "ORDER BY COUNT(*) DESC";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, uid);
         stmt.setInt(2, uid);
         ResultSet rs = stmt.executeQuery();
-        List<Pair<Integer,Integer>> top_tags = new ArrayList<>();
-        while(rs.next()){
-            top_tags.add(new Pair<Integer,Integer>(rs.getInt("pid"), rs.getInt(2)));
+        List<Pair<Integer, Integer>> top_tags = new ArrayList<>();
+        while (rs.next()) {
+            top_tags.add(new Pair<Integer, Integer>(rs.getInt("pid"), rs.getInt(2)));
         }
         return top_tags;
     }
