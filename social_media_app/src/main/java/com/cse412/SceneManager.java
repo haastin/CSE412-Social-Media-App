@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class SceneManager {
 
@@ -491,6 +492,7 @@ public class SceneManager {
             // If a file was selected, do something with it
             if (selectedFile != null) {
                 // Upload the file to your app or display it in a ImageView, for example:
+
                 Image up_image = new Image(selectedFile.toURI().toString());
                 ImageView imageView = new ImageView(up_image);
                 int target_user_uid = Main.curr_user;
@@ -504,6 +506,7 @@ public class SceneManager {
                 List<Album> albums = new ArrayList<>(this_users_albums);
                 int aid_chosen = 0;
                 String up_caption = "";
+                List<String> up_tags = new ArrayList<>();
 
                 // Create a dialog for choosing an album
                 Dialog<Album> dialog = new Dialog<>();
@@ -550,28 +553,118 @@ public class SceneManager {
                         up_caption = captionResult.get();
                         // Do something with the caption, such as storing it with the photo in the
                         // chosen album
-                    }
 
-                    try {
-                        Main.db.createPhoto(aid_chosen, up_caption, title);
-                    } catch (SQLException k) {
-                        k.printStackTrace();
-                    }
+                        // Create a dialog for entering tags
+                        TextInputDialog tagDialog = new TextInputDialog();
+                        tagDialog.setTitle("Enter Tags");
+                        tagDialog.setHeaderText("Enter tags for your photo (separated by commas):");
+                        tagDialog.setContentText("Tags:");
 
-                    try {
-                        Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                        // Show the dialog and wait for the user to input tags
+                        Optional<String> tagResult = tagDialog.showAndWait();
+                        if (tagResult.isPresent()) {
+                            String tagsString = tagResult.get();
+                            // Split the tags by commas and add them to the tags list
+                            String[] tagsArray = tagsString.split(", ");
+                            up_tags.addAll(Arrays.asList(tagsArray));
+                        }
                     }
                 }
-                // Add the ImageView to a parent node or scene
+
+                /*
+                 * Image up_image = new Image(selectedFile.toURI().toString());
+                 * ImageView imageView = new ImageView(up_image);
+                 * int target_user_uid = Main.curr_user;
+                 * List<Album> this_users_albums = new ArrayList<>();
+                 * try {
+                 * this_users_albums = Main.db.getAllAlbumsOfLoggedInUser(target_user_uid);
+                 * } catch (SQLException q) {
+                 * q.printStackTrace();
+                 * }
+                 * 
+                 * List<Album> albums = new ArrayList<>(this_users_albums);
+                 * int aid_chosen = 0;
+                 * String up_caption = "";
+                 * 
+                 * // Create a dialog for choosing an album
+                 * Dialog<Album> dialog = new Dialog<>();
+                 * dialog.setTitle("Choose Album");
+                 * 
+                 * // Set the buttons
+                 * List<ButtonType> albumButtons = new ArrayList<>();
+                 * for (Album album : this_users_albums) {
+                 * albumButtons.add(new ButtonType(album.albumName, ButtonData.LEFT));
+                 * }
+                 * dialog.getDialogPane().getButtonTypes().addAll(albumButtons);
+                 * dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL);
+                 * 
+                 * // Set the result converter
+                 * dialog.setResultConverter(dialogButton -> {
+                 * if (dialogButton == ButtonType.CANCEL) {
+                 * return null;
+                 * } else {
+                 * // Get the index of the selected album button
+                 * int index = dialog.getDialogPane().getButtonTypes().indexOf(dialogButton);
+                 * 
+                 * // Get the selected album
+                 * return albums.get(index);
+                 * }
+                 * });
+                 * 
+                 * // Show the dialog and wait for the user to choose an album
+                 * Optional<Album> result = dialog.showAndWait();
+                 * 
+                 * // Set the aid_chosen variable if an album was chosen
+                 * if (result.isPresent()) {
+                 * Album chosenAlbum = result.get();
+                 * aid_chosen = chosenAlbum.aid;
+                 * 
+                 * // Create a dialog for entering a caption
+                 * TextInputDialog captionDialog = new TextInputDialog();
+                 * captionDialog.setTitle("Enter Caption");
+                 * captionDialog.setHeaderText("Enter a caption for your photo:");
+                 * captionDialog.setContentText("Caption:");
+                 * 
+                 * // Show the dialog and wait for the user to input a caption
+                 * Optional<String> captionResult = captionDialog.showAndWait();
+                 * if (captionResult.isPresent()) {
+                 * up_caption = captionResult.get();
+                 * // Do something with the caption, such as storing it with the photo in the
+                 * // chosen album
+                 * }
+                 */
+                    int new_pic_pid = 0;
+                try {
+                    new_pic_pid = Main.db.createPhoto(aid_chosen, up_caption, title);
+                } catch (SQLException k) {
+                    k.printStackTrace();
+                }
+                
+                if(new_pic_pid != 0){
+                for (int i = 0; i < up_tags.size(); i++) {
+
+                    try {
+                        
+                        Main.db.createTag(new_pic_pid, up_tags.get(i));
+                    } catch (SQLException g) {
+                        g.printStackTrace();
+                    }
+                }
             }
 
+                try {
+                    Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            // Add the ImageView to a parent node or scene
         });
 
         // Add the button to a parent node or scene
 
         stage.setScene(feedScene);
+
     }
 
     void switchToMultipleTagSearchBasePage() {
@@ -929,7 +1022,6 @@ public class SceneManager {
 
         tagsSection.getChildren().add(hBox6);
 
-
         Button goBack = new Button("Go Back To Main Feed");
 
         HBox hBox4 = new HBox();
@@ -1192,7 +1284,6 @@ public class SceneManager {
         tags_title.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 18));
         tags_title.setTextFill(Color.BLACK);
 
-
         Label poster = new Label(poster_firstname + " " + poster_lastname);
 
         poster.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 20));
@@ -1220,7 +1311,6 @@ public class SceneManager {
         }
 
         tagsSection.getChildren().add(hBox6);
-
 
         Button goBack = new Button("Go Back To Main Feed");
 
@@ -1997,7 +2087,6 @@ public class SceneManager {
 
         tagsSection.getChildren().add(hBox6);
 
-
         Button goBack = new Button("Go Back To Main Feed");
 
         HBox hBox4 = new HBox();
@@ -2028,10 +2117,9 @@ public class SceneManager {
 
         next.setOnAction((ActionEvent h) -> {
             index++;
-            if(index >= top_pics.size()){
+            if (index >= top_pics.size()) {
                 switchToFeed(false);
-            }
-            else{
+            } else {
                 switchToYouMayAlsoLike(top_pics.get(index).getKey());
             }
         });
