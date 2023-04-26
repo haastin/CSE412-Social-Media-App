@@ -1,8 +1,10 @@
 package com.cse412;
 
 import javafx.application.Application;
+import javafx.collections.ObservableList;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
@@ -424,7 +426,7 @@ public class Main extends Application {
         centerPaneSearchUsers.add(SearchUserFirstNameField, 0, 3);
         centerPaneSearchUsers.add(SearchUserLastNameField, 0, 4);
         centerPaneSearchUsers.add(SearchUserButton, 0, 5);
-        centerPaneSearchUsers.add(GoBackSearchUsers, 0, 16);
+        centerPaneSearchUsers.add(GoBackSearchUsers, 3, 0);
 
         // it's like x and y coordinates, but use the window dimensions to kind of see
         // how big a unit is
@@ -435,16 +437,18 @@ public class Main extends Application {
 
         sm.searchForUsersScene = scene3;
 
-        Button buttonToAddFriend1 = new Button("Add Friend");
-        Button buttonToAddFriend2 = new Button("Add Friend");
-        Button buttonToAddFriend3 = new Button("Add Friend");
-        Button buttonToAddFriend4 = new Button("Add Friend");
-        Button buttonToAddFriend5 = new Button("Add Friend");
-        Button buttonToAddFriend6 = new Button("Add Friend");
-        Button buttonToAddFriend7 = new Button("Add Friend");
-        Button buttonToAddFriend8 = new Button("Add Friend");
-        Button buttonToAddFriend9 = new Button("Add Friend");
-        Button buttonToAddFriend10 = new Button("Add Friend");
+        /*
+         * Button buttonToAddFriend1 = new Button("Add Friend");
+         * Button buttonToAddFriend2 = new Button("Add Friend");
+         * Button buttonToAddFriend3 = new Button("Add Friend");
+         * Button buttonToAddFriend4 = new Button("Add Friend");
+         * Button buttonToAddFriend5 = new Button("Add Friend");
+         * Button buttonToAddFriend6 = new Button("Add Friend");
+         * Button buttonToAddFriend7 = new Button("Add Friend");
+         * Button buttonToAddFriend8 = new Button("Add Friend");
+         * Button buttonToAddFriend9 = new Button("Add Friend");
+         * Button buttonToAddFriend10 = new Button("Add Friend");
+         */
 
         SearchUserButton.setOnAction(ev -> {
 
@@ -462,16 +466,26 @@ public class Main extends Application {
             int j = 6;
 
             // add buttons to centerPane
-            centerPaneSearchUsers.add(buttonToAddFriend1, 2, 6);
-            centerPaneSearchUsers.add(buttonToAddFriend2, 2, 7);
-            centerPaneSearchUsers.add(buttonToAddFriend3, 2, 8);
-            centerPaneSearchUsers.add(buttonToAddFriend4, 2, 9);
-            centerPaneSearchUsers.add(buttonToAddFriend5, 2, 10);
-            centerPaneSearchUsers.add(buttonToAddFriend6, 2, 11);
-            centerPaneSearchUsers.add(buttonToAddFriend7, 2, 12);
-            centerPaneSearchUsers.add(buttonToAddFriend8, 2, 13);
-            centerPaneSearchUsers.add(buttonToAddFriend9, 2, 14);
-            centerPaneSearchUsers.add(buttonToAddFriend10, 2, 15);
+            /*
+             * centerPaneSearchUsers.add(buttonToAddFriend1, 2, 6);
+             * centerPaneSearchUsers.add(buttonToAddFriend2, 2, 7);
+             * centerPaneSearchUsers.add(buttonToAddFriend3, 2, 8);
+             * centerPaneSearchUsers.add(buttonToAddFriend4, 2, 9);
+             * centerPaneSearchUsers.add(buttonToAddFriend5, 2, 10);
+             * centerPaneSearchUsers.add(buttonToAddFriend6, 2, 11);
+             * centerPaneSearchUsers.add(buttonToAddFriend7, 2, 12);
+             * centerPaneSearchUsers.add(buttonToAddFriend8, 2, 13);
+             * centerPaneSearchUsers.add(buttonToAddFriend9, 2, 14);
+             * centerPaneSearchUsers.add(buttonToAddFriend10, 2, 15);
+             */
+
+            ObservableList<Node> children = centerPaneSearchUsers.getChildren();
+            for (int r = children.size() - 1; r >= 0; r--) {
+                Node child = children.get(r);
+                if (GridPane.getRowIndex(child) != null && GridPane.getRowIndex(child) >= 6) {
+                    centerPaneSearchUsers.getChildren().remove(r);
+                }
+            }
 
             for (Integer user : uids_of_searched_name) {
 
@@ -481,240 +495,268 @@ public class Main extends Application {
                 } catch (SQLException e) {
 
                 }
+                Button buttonToAddFriend1 = new Button("Add Friend");
                 centerPaneSearchUsers.add(new Label(u.firstName), 0, j);
                 centerPaneSearchUsers.add(new Label(u.lastName), 1, j);
+                centerPaneSearchUsers.add(buttonToAddFriend1, 2, j);
+                User k = u;
+                buttonToAddFriend1.setOnAction(event -> {
+
+                    try {
+
+                        db.recordFriendship(curr_user, k.uid);
+
+                    } catch (SQLException e) {
+
+                    }
+                    buttonToAddFriend1.setText("Friends");
+                });
+
                 j++;
 
                 if (j >= 16) {
                     break;
                 }
 
+
             }
 
         });
 
         // if a user presses on a button, friend the associated user
-        buttonToAddFriend1.setOnAction(ev -> {
-
-            String search_firstname = SearchUserFirstNameField.getText();
-            String search_lastname = SearchUserLastNameField.getText();
-            List<Integer> uids_of_searched_name = new ArrayList<>();
-
-            try {
-                uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
-                User u = null;
-
-                if (uids_of_searched_name.size() > 0) {
-                    System.out.println(uids_of_searched_name.get(0));
-                    u = db.getAllUserInfo(uids_of_searched_name.get(0));
-                    System.out.println(u.uid);
-                }
-
-                db.recordFriendship(curr_user, u.uid);
-
-            } catch (SQLException e) {
-
-            }
-
-        });
-
-        buttonToAddFriend2.setOnAction(ev -> {
-
-            String search_firstname = SearchUserFirstNameField.getText();
-            String search_lastname = SearchUserLastNameField.getText();
-            List<Integer> uids_of_searched_name = new ArrayList<>();
-
-            try {
-                uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
-                User u = null;
-
-                if (uids_of_searched_name.size() > 1) {
-                    u = db.getAllUserInfo(uids_of_searched_name.get(1));
-                }
-
-                db.recordFriendship(curr_user, u.uid);
-
-            } catch (SQLException e) {
-
-            }
-
-        });
-
-        buttonToAddFriend3.setOnAction(ev -> {
-
-            String search_firstname = SearchUserFirstNameField.getText();
-            String search_lastname = SearchUserLastNameField.getText();
-            List<Integer> uids_of_searched_name = new ArrayList<>();
-
-            try {
-                uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
-                User u = null;
-
-                if (uids_of_searched_name.size() > 2) {
-                    u = db.getAllUserInfo(uids_of_searched_name.get(2));
-                }
-
-                db.recordFriendship(curr_user, u.uid);
-
-            } catch (SQLException e) {
-
-            }
-
-        });
-
-        buttonToAddFriend4.setOnAction(ev -> {
-
-            String search_firstname = SearchUserFirstNameField.getText();
-            String search_lastname = SearchUserLastNameField.getText();
-            List<Integer> uids_of_searched_name = new ArrayList<>();
-
-            try {
-                uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
-                User u = null;
-
-                if (uids_of_searched_name.size() > 3) {
-                    u = db.getAllUserInfo(uids_of_searched_name.get(3));
-                }
-
-                db.recordFriendship(curr_user, u.uid);
-
-            } catch (SQLException e) {
-
-            }
-
-        });
-
-        buttonToAddFriend5.setOnAction(ev -> {
-
-            String search_firstname = SearchUserFirstNameField.getText();
-            String search_lastname = SearchUserLastNameField.getText();
-            List<Integer> uids_of_searched_name = new ArrayList<>();
-
-            try {
-                uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
-                User u = null;
-
-                if (uids_of_searched_name.size() > 4) {
-                    u = db.getAllUserInfo(uids_of_searched_name.get(4));
-                }
-
-                db.recordFriendship(curr_user, u.uid);
-
-            } catch (SQLException e) {
-
-            }
-
-        });
-
-        buttonToAddFriend6.setOnAction(ev -> {
-
-            String search_firstname = SearchUserFirstNameField.getText();
-            String search_lastname = SearchUserLastNameField.getText();
-            List<Integer> uids_of_searched_name = new ArrayList<>();
-
-            try {
-                uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
-                User u = null;
-
-                if (uids_of_searched_name.size() > 5) {
-                    u = db.getAllUserInfo(uids_of_searched_name.get(5));
-                }
-
-                db.recordFriendship(curr_user, u.uid);
-
-            } catch (SQLException e) {
-
-            }
-
-        });
-
-        buttonToAddFriend7.setOnAction(ev -> {
-
-            String search_firstname = SearchUserFirstNameField.getText();
-            String search_lastname = SearchUserLastNameField.getText();
-            List<Integer> uids_of_searched_name = new ArrayList<>();
-
-            try {
-                uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
-                User u = null;
-
-                if (uids_of_searched_name.size() > 6) {
-                    u = db.getAllUserInfo(uids_of_searched_name.get(6));
-                }
-
-                db.recordFriendship(curr_user, u.uid);
-
-            } catch (SQLException e) {
-
-            }
-
-        });
-
-        buttonToAddFriend8.setOnAction(ev -> {
-
-            String search_firstname = SearchUserFirstNameField.getText();
-            String search_lastname = SearchUserLastNameField.getText();
-            List<Integer> uids_of_searched_name = new ArrayList<>();
-
-            try {
-                uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
-                User u = null;
-
-                if (uids_of_searched_name.size() > 7) {
-                    u = db.getAllUserInfo(uids_of_searched_name.get(7));
-                }
-
-                db.recordFriendship(curr_user, u.uid);
-
-            } catch (SQLException e) {
-
-            }
-
-        });
-
-        buttonToAddFriend9.setOnAction(ev -> {
-
-            String search_firstname = SearchUserFirstNameField.getText();
-            String search_lastname = SearchUserLastNameField.getText();
-            List<Integer> uids_of_searched_name = new ArrayList<>();
-
-            try {
-                uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
-                User u = null;
-
-                if (uids_of_searched_name.size() > 8) {
-                    u = db.getAllUserInfo(uids_of_searched_name.get(8));
-                }
-
-                db.recordFriendship(curr_user, u.uid);
-
-            } catch (SQLException e) {
-
-            }
-
-        });
-
-        buttonToAddFriend10.setOnAction(ev -> {
-
-            String search_firstname = SearchUserFirstNameField.getText();
-            String search_lastname = SearchUserLastNameField.getText();
-            List<Integer> uids_of_searched_name = new ArrayList<>();
-
-            try {
-                uids_of_searched_name = db.findUsersByName(search_firstname, search_lastname);
-                User u = null;
-
-                if (uids_of_searched_name.size() > 9) {
-                    u = db.getAllUserInfo(uids_of_searched_name.get(9));
-                }
-
-                db.recordFriendship(curr_user, u.uid);
-
-            } catch (SQLException e) {
-
-            }
-
-        });
+        /*
+         * buttonToAddFriend1.setOnAction(ev -> {
+         * 
+         * String search_firstname = SearchUserFirstNameField.getText();
+         * String search_lastname = SearchUserLastNameField.getText();
+         * List<Integer> uids_of_searched_name = new ArrayList<>();
+         * 
+         * try {
+         * uids_of_searched_name = db.findUsersByName(search_firstname,
+         * search_lastname);
+         * User u = null;
+         * 
+         * if (uids_of_searched_name.size() > 0) {
+         * System.out.println(uids_of_searched_name.get(0));
+         * u = db.getAllUserInfo(uids_of_searched_name.get(0));
+         * System.out.println(u.uid);
+         * }
+         * 
+         * db.recordFriendship(curr_user, u.uid);
+         * 
+         * } catch (SQLException e) {
+         * 
+         * }
+         * 
+         * });
+         * 
+         * buttonToAddFriend2.setOnAction(ev -> {
+         * 
+         * String search_firstname = SearchUserFirstNameField.getText();
+         * String search_lastname = SearchUserLastNameField.getText();
+         * List<Integer> uids_of_searched_name = new ArrayList<>();
+         * 
+         * try {
+         * uids_of_searched_name = db.findUsersByName(search_firstname,
+         * search_lastname);
+         * User u = null;
+         * 
+         * if (uids_of_searched_name.size() > 1) {
+         * u = db.getAllUserInfo(uids_of_searched_name.get(1));
+         * }
+         * 
+         * db.recordFriendship(curr_user, u.uid);
+         * 
+         * } catch (SQLException e) {
+         * 
+         * }
+         * 
+         * });
+         * 
+         * buttonToAddFriend3.setOnAction(ev -> {
+         * 
+         * String search_firstname = SearchUserFirstNameField.getText();
+         * String search_lastname = SearchUserLastNameField.getText();
+         * List<Integer> uids_of_searched_name = new ArrayList<>();
+         * 
+         * try {
+         * uids_of_searched_name = db.findUsersByName(search_firstname,
+         * search_lastname);
+         * User u = null;
+         * 
+         * if (uids_of_searched_name.size() > 2) {
+         * u = db.getAllUserInfo(uids_of_searched_name.get(2));
+         * }
+         * 
+         * db.recordFriendship(curr_user, u.uid);
+         * 
+         * } catch (SQLException e) {
+         * 
+         * }
+         * 
+         * });
+         * 
+         * buttonToAddFriend4.setOnAction(ev -> {
+         * 
+         * String search_firstname = SearchUserFirstNameField.getText();
+         * String search_lastname = SearchUserLastNameField.getText();
+         * List<Integer> uids_of_searched_name = new ArrayList<>();
+         * 
+         * try {
+         * uids_of_searched_name = db.findUsersByName(search_firstname,
+         * search_lastname);
+         * User u = null;
+         * 
+         * if (uids_of_searched_name.size() > 3) {
+         * u = db.getAllUserInfo(uids_of_searched_name.get(3));
+         * }
+         * 
+         * db.recordFriendship(curr_user, u.uid);
+         * 
+         * } catch (SQLException e) {
+         * 
+         * }
+         * 
+         * });
+         * 
+         * buttonToAddFriend5.setOnAction(ev -> {
+         * 
+         * String search_firstname = SearchUserFirstNameField.getText();
+         * String search_lastname = SearchUserLastNameField.getText();
+         * List<Integer> uids_of_searched_name = new ArrayList<>();
+         * 
+         * try {
+         * uids_of_searched_name = db.findUsersByName(search_firstname,
+         * search_lastname);
+         * User u = null;
+         * 
+         * if (uids_of_searched_name.size() > 4) {
+         * u = db.getAllUserInfo(uids_of_searched_name.get(4));
+         * }
+         * 
+         * db.recordFriendship(curr_user, u.uid);
+         * 
+         * } catch (SQLException e) {
+         * 
+         * }
+         * 
+         * });
+         * 
+         * buttonToAddFriend6.setOnAction(ev -> {
+         * 
+         * String search_firstname = SearchUserFirstNameField.getText();
+         * String search_lastname = SearchUserLastNameField.getText();
+         * List<Integer> uids_of_searched_name = new ArrayList<>();
+         * 
+         * try {
+         * uids_of_searched_name = db.findUsersByName(search_firstname,
+         * search_lastname);
+         * User u = null;
+         * 
+         * if (uids_of_searched_name.size() > 5) {
+         * u = db.getAllUserInfo(uids_of_searched_name.get(5));
+         * }
+         * 
+         * db.recordFriendship(curr_user, u.uid);
+         * 
+         * } catch (SQLException e) {
+         * 
+         * }
+         * 
+         * });
+         * 
+         * buttonToAddFriend7.setOnAction(ev -> {
+         * 
+         * String search_firstname = SearchUserFirstNameField.getText();
+         * String search_lastname = SearchUserLastNameField.getText();
+         * List<Integer> uids_of_searched_name = new ArrayList<>();
+         * 
+         * try {
+         * uids_of_searched_name = db.findUsersByName(search_firstname,
+         * search_lastname);
+         * User u = null;
+         * 
+         * if (uids_of_searched_name.size() > 6) {
+         * u = db.getAllUserInfo(uids_of_searched_name.get(6));
+         * }
+         * 
+         * db.recordFriendship(curr_user, u.uid);
+         * 
+         * } catch (SQLException e) {
+         * 
+         * }
+         * 
+         * });
+         * 
+         * buttonToAddFriend8.setOnAction(ev -> {
+         * 
+         * String search_firstname = SearchUserFirstNameField.getText();
+         * String search_lastname = SearchUserLastNameField.getText();
+         * List<Integer> uids_of_searched_name = new ArrayList<>();
+         * 
+         * try {
+         * uids_of_searched_name = db.findUsersByName(search_firstname,
+         * search_lastname);
+         * User u = null;
+         * 
+         * if (uids_of_searched_name.size() > 7) {
+         * u = db.getAllUserInfo(uids_of_searched_name.get(7));
+         * }
+         * 
+         * db.recordFriendship(curr_user, u.uid);
+         * 
+         * } catch (SQLException e) {
+         * 
+         * }
+         * 
+         * });
+         * 
+         * buttonToAddFriend9.setOnAction(ev -> {
+         * 
+         * String search_firstname = SearchUserFirstNameField.getText();
+         * String search_lastname = SearchUserLastNameField.getText();
+         * List<Integer> uids_of_searched_name = new ArrayList<>();
+         * 
+         * try {
+         * uids_of_searched_name = db.findUsersByName(search_firstname,
+         * search_lastname);
+         * User u = null;
+         * 
+         * if (uids_of_searched_name.size() > 8) {
+         * u = db.getAllUserInfo(uids_of_searched_name.get(8));
+         * }
+         * 
+         * db.recordFriendship(curr_user, u.uid);
+         * 
+         * } catch (SQLException e) {
+         * 
+         * }
+         * 
+         * });
+         * 
+         * buttonToAddFriend10.setOnAction(ev -> {
+         * 
+         * String search_firstname = SearchUserFirstNameField.getText();
+         * String search_lastname = SearchUserLastNameField.getText();
+         * List<Integer> uids_of_searched_name = new ArrayList<>();
+         * 
+         * try {
+         * uids_of_searched_name = db.findUsersByName(search_firstname,
+         * search_lastname);
+         * User u = null;
+         * 
+         * if (uids_of_searched_name.size() > 9) {
+         * u = db.getAllUserInfo(uids_of_searched_name.get(9));
+         * }
+         * 
+         * db.recordFriendship(curr_user, u.uid);
+         * 
+         * } catch (SQLException e) {
+         * 
+         * }
+         * 
+         * });
+         */
 
         // go back to feedPage
         GoBackSearchUsers.setOnAction(ev -> {
@@ -865,357 +907,362 @@ public class Main extends Application {
 
         /* search for photos via tags */
 
-        /*BorderPane rootPaneSearchTags = new BorderPane();
-        GridPane centerPaneSearchTags = new GridPane();
-
-        centerPaneSearchTags.setAlignment(Pos.CENTER); // centered alignment
-        centerPaneSearchTags.setPadding(new Insets(1, 1, 1, 1)); // this is the spacing from the perimeter of the window
-        centerPaneSearchTags.setHgap(10); // the spacing between objects horizontally
-        centerPaneSearchTags.setVgap(10); // the spacing between objects horizontally
-
-        Label TagSearch = new Label("Filter Photos via Tag");
-        Label TagSearchDirections = new Label("Separate tags by space as so: red blue green yellow orange");
-        TagSearch.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
-        TagSearch.setTextFill(Color.HOTPINK);
-
-        Button TagSearchButton = new Button("Search");
-        Button OwnTagPhotos = new Button("View Only Your Photos Via Tag");
-        Button TagSearchGoBack = new Button("Go Back");
-        TextField TagSearchField = new TextField();
-
-        // if someone clicked on a tag, fill the tag search bar with the tag
-        if (clickedOnTag) {
-            TagSearchField.setText(tagToSearch);
-        }
-
-        // set scene
-        rootPaneSearchTags.setCenter(centerPaneSearchTags);
-        centerPaneSearchTags.add(TagSearch, 0, 0);
-        centerPaneSearchTags.add(TagSearchDirections, 0, 1);
-        centerPaneSearchTags.add(TagSearchButton, 0, 3);
-        centerPaneSearchTags.add(OwnTagPhotos, 0, 4);
-        centerPaneSearchTags.add(TagSearchGoBack, 0, 5);
-        centerPaneSearchTags.add(TagSearchField, 0, 2);
-
-        Scene SearchTagScene = new Scene(rootPaneSearchTags, 700, 600);
-        sm.searchTagsScene = SearchTagScene;
-
-        List<String> tags_to_search = new ArrayList<>();
-        int photoToGetOthers = 0;
-        int photoToGetOwn = 0;
-        boolean showingOwnPhotos = false;
-
-        OwnTagPhotos.setOnAction(ev -> {
-
-            String tagsFieldResult = TagSearchField.getText();
-            int n = 0;
-            for (int m = 0; m < tagsFieldResult.length(); m++) {
-
-                if (tagsFieldResult.substring(m, m + 1).equals(" ")) {
-                    tags_to_search.add(tagsFieldResult.substring(n, m));
-                    n = m + 1;
-                } else if (m >= tagsFieldResult.length() - 1) {
-                    tags_to_search.add(tagsFieldResult.substring(n, m + 1));
-                }
-
-            }
-
-            // populate an array with list of tags
-            String[] search_all_tags = new String[tags_to_search.size()];
-            n = 0;
-            for (String tag : tags_to_search) {
-                search_all_tags[n] = tag;
-                n++;
-                System.out.println(tag);
-            }
-            List<Integer> all_photos_with_tags = new ArrayList<>();
-            try {
-
-                all_photos_with_tags = Main.db.getPhotosByMultipleTagsAndUser(search_all_tags, Main.curr_user);
-                System.out.println(all_photos_with_tags.size());
-                if (all_photos_with_tags.size() > 0) {
-                    sm.switchToMultipleTagSearch(true, all_photos_with_tags);
-                }
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-        });
-
-        TagSearchButton.setOnAction(ev -> {
-
-            // extract tags from search field
-            String tagsFieldResult = TagSearchField.getText();
-            int n = 0;
-            for (int m = 0; m < tagsFieldResult.length(); m++) {
-
-                if (tagsFieldResult.substring(m, m + 1).equals(" ")) {
-                    tags_to_search.add(tagsFieldResult.substring(n, m));
-                    n = m + 1;
-                } else if (m >= tagsFieldResult.length() - 1) {
-                    tags_to_search.add(tagsFieldResult.substring(n, m + 1));
-                }
-
-            }
-
-            // populate an array with list of tags
-            String[] search_all_tags = new String[tags_to_search.size()];
-            n = 0;
-            for (String tag : tags_to_search) {
-                search_all_tags[n] = tag;
-                n++;
-            }
-            List<Integer> all_photos_with_tags = new ArrayList<>();
-            try {
-
-                all_photos_with_tags = Main.db.getPhotosByMultipleTags(search_all_tags, Main.curr_user);
-                if (all_photos_with_tags.size() > 0) {
-                    sm.switchToMultipleTagSearch(false, all_photos_with_tags);
-                }
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
-
-        // if go back button pressed, go back to feed
-        TagSearchGoBack.setOnAction(ev -> {
-
-            sm.switchToFeed(false);
-
-        });*/
-            // search all photos (not this user's) by multiple tags
-            /*
-             * List<Integer> all_photos_with_tags = new ArrayList<>();
-             * if (!showingOwnPhotos) {
-             * try{
-             * all_photos_with_tags = db.getPhotosByMultipleTags(search_all_tags,
-             * curr_user);
-             * }catch(SQLException e){
-             * e.printStackTrace();
-             * }
-             * } else {
-             * try{
-             * all_photos_with_tags = db.getPhotosByMultipleTagsAndUser(search_all_tags,
-             * curr_user);
-             * }catch(SQLException e){
-             * e.printStackTrace();
-             * }
-             * }
-             * 
-             * 
-             * String url = "";
-             * String poster_firstname = "";
-             * String poster_lastname = "";
-             * String caption = "";
-             * List<Tag> tags = new ArrayList<>();
-             * List<Pair<String, Comment>> comments = new ArrayList<>();
-             * 
-             * List<User> likers = new ArrayList<>();
-             * int total_likes = 0;
-             * User poster = new User();;
-             * Photo pic = new Photo();
-             * 
-             * if (!showingOwnPhotos) {
-             * try {
-             * pic = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOthers));
-             * comments =
-             * Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOthers));
-             * likers =
-             * Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOthers));
-             * tags = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOthers));
-             * poster = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOthers));
-             * } catch (SQLException e) {
-             * 
-             * }
-             * } else {
-             * try {
-             * pic = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOwn));
-             * comments =
-             * Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOwn));
-             * likers = Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOwn));
-             * tags = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOwn));
-             * poster = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOwn));
-             * } catch (SQLException e) {
-             * 
-             * }
-             * }
-             * 
-             * poster_firstname = poster.firstName;
-             * poster_lastname = poster.lastName;
-             * 
-             * caption = pic.caption;
-             * url = pic.url;
-             * 
-             * total_likes = likers.size();
-             * 
-             * InputStream is = Main.class.getClassLoader().getResourceAsStream(url);
-             * Image image = new Image(is);
-             * 
-             * ImageView view = new ImageView(image);
-             * 
-             * view.setX(25);
-             * view.setY(25);
-             * 
-             * view.setFitHeight(100);
-             * view.setFitWidth(100);
-             * 
-             * view.setPreserveRatio(true);
-             * 
-             * Label comment0 = new Label("Comments");
-             * 
-             * comment0.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
-             * comment0.setTextFill(Color.INDIGO);
-             * 
-             * Label comment1 = new Label("");
-             * comment1.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
-             * comment1.setTextFill(Color.BLACK);
-             * 
-             * Label numLikes = new Label(total_likes + " Likes"); // NOT SURE WHERE TO GET
-             * LIKES FROM
-             * 
-             * numLikes.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
-             * numLikes.setTextFill(Color.TEAL);
-             * 
-             * HBox hBox2 = new HBox();
-             * hBox2.setPadding(new Insets(10, 10, 10, 10));
-             * hBox2.setSpacing(5);
-             * 
-             * hBox2.setAlignment(Pos.CENTER_RIGHT);
-             * hBox2.getChildren().add(view);
-             * 
-             * Button next = new Button("Next pic");
-             * next.setMaxSize(100.0, 100.0);
-             * rootPaneSearchTags.setBottom(next);
-             * 
-             * VBox vBox = new VBox();
-             * vBox.setPadding(new Insets(10, 10, 10, 20));
-             * vBox.setSpacing(5);
-             * // vBox.setAlignment(Pos.CENTER);
-             * vBox.getChildren().addAll(hBox2, numLikes, comment0, comment1);
-             * 
-             * for (int p = 0; p < comments.size(); p++) {
-             * Pair<String, Comment> full_comment = comments.get(p);
-             * String comm = full_comment.getKey() + " " + full_comment.getValue().text;
-             * vBox.getChildren().add(new Label(comm));
-             * }
-             * 
-             * Scene showPhotosViaTagFilterScene = new Scene(rootPaneSearchTags, 700, 600);
-             * primaryStage.setTitle("Social Media App");
-             * primaryStage.setScene(showPhotosViaTagFilterScene);
-             * primaryStage.show();
-             * 
-             * next.setOnAction(eve -> {
-             * /*
-             * String urlNext = "";
-             * String poster_firstnameNext = "";
-             * String poster_lastnameNext = "";
-             * String captionNext = "";
-             * List<Tag> tagsNext = new ArrayList<>();
-             * List<Pair<String, Comment>> commentsNext = new ArrayList<>();
-             * 
-             * List<User> likersNext = new ArrayList<>();
-             * int total_likesNext = 0;
-             * User posterNext = new User();;
-             * Photo picNext = new Photo();
-             * 
-             * if (!showingOwnPhotos) {
-             * try {
-             * picNext = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOthers + 1));
-             * commentsNext =
-             * Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOthers + 1));
-             * likersNext =
-             * Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOthers + 1));
-             * tagsNext = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOthers +
-             * 1));
-             * posterNext = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOthers
-             * + 1));
-             * } catch (SQLException e) {
-             * 
-             * }
-             * } else {
-             * try {
-             * picNext = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOwn + 1));
-             * commentsNext =
-             * Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOwn + 1));
-             * likersNext = Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOwn
-             * + 1));
-             * tagsNext = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOwn +
-             * 1));
-             * posterNext = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOwn +
-             * 1));
-             * } catch (SQLException e) {
-             * 
-             * }
-             * }
-             * 
-             * poster_firstnameNext = posterNext.firstName;
-             * poster_lastnameNext = posterNext.lastName;
-             * 
-             * captionNext = picNext.caption;
-             * urlNext = picNext.url;
-             * 
-             * total_likesNext = likersNext.size();
-             * 
-             * InputStream isNext =
-             * Main.class.getClassLoader().getResourceAsStream(urlNext);
-             * Image imageNext = new Image(isNext);
-             * 
-             * ImageView viewNext = new ImageView(imageNext);
-             * 
-             * viewNext.setX(25);
-             * viewNext.setY(25);
-             * 
-             * viewNext.setFitHeight(100);
-             * viewNext.setFitWidth(100);
-             * 
-             * viewNext.setPreserveRatio(true);
-             * 
-             * Label comment0Next = new Label("Comments");
-             * 
-             * comment0Next.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
-             * comment0Next.setTextFill(Color.INDIGO);
-             * 
-             * Label comment1Next = new Label("");
-             * comment1Next.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
-             * comment1Next.setTextFill(Color.BLACK);
-             * 
-             * Label numLikesNext = new Label(total_likesNext + " Likes"); // NOT SURE WHERE
-             * TO GET LIKES FROM
-             * 
-             * numLikesNext.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
-             * numLikesNext.setTextFill(Color.TEAL);
-             * 
-             * HBox hBox2Next = new HBox();
-             * hBox2Next.setPadding(new Insets(10, 10, 10, 10));
-             * hBox2Next.setSpacing(5);
-             * 
-             * hBox2Next.setAlignment(Pos.CENTER_RIGHT);
-             * hBox2Next.getChildren().add(view);
-             * 
-             * VBox vBoxNext = new VBox();
-             * vBoxNext.setPadding(new Insets(10, 10, 10, 20));
-             * vBoxNext.setSpacing(5);
-             * // vBox.setAlignment(Pos.CENTER);
-             * vBoxNext.getChildren().addAll(hBox2Next, numLikesNext, comment0Next,
-             * comment1Next);
-             * 
-             * for (int p = 0; p < comments.size(); p++) {
-             * Pair<String, Comment> full_comment = comments.get(p);
-             * String comm = full_comment.getKey() + " " + full_comment.getValue().text;
-             * vBox.getChildren().add(new Label(comm));
-             * }
-             * 
-             * Scene showPhotosViaTagFilterSceneNext = new Scene(rootPaneSearchTags, 700,
-             * 600);
-             * primaryStage.setTitle("Social Media App");
-             * primaryStage.setScene(showPhotosViaTagFilterSceneNext);
-             * primaryStage.show();
-             * 
-             * });
-             */
-
+        /*
+         * BorderPane rootPaneSearchTags = new BorderPane();
+         * GridPane centerPaneSearchTags = new GridPane();
+         * 
+         * centerPaneSearchTags.setAlignment(Pos.CENTER); // centered alignment
+         * centerPaneSearchTags.setPadding(new Insets(1, 1, 1, 1)); // this is the
+         * spacing from the perimeter of the window
+         * centerPaneSearchTags.setHgap(10); // the spacing between objects horizontally
+         * centerPaneSearchTags.setVgap(10); // the spacing between objects horizontally
+         * 
+         * Label TagSearch = new Label("Filter Photos via Tag");
+         * Label TagSearchDirections = new
+         * Label("Separate tags by space as so: red blue green yellow orange");
+         * TagSearch.setFont(Font.font("Times New Roman", FontPosture.REGULAR, 25));
+         * TagSearch.setTextFill(Color.HOTPINK);
+         * 
+         * Button TagSearchButton = new Button("Search");
+         * Button OwnTagPhotos = new Button("View Only Your Photos Via Tag");
+         * Button TagSearchGoBack = new Button("Go Back");
+         * TextField TagSearchField = new TextField();
+         * 
+         * // if someone clicked on a tag, fill the tag search bar with the tag
+         * if (clickedOnTag) {
+         * TagSearchField.setText(tagToSearch);
+         * }
+         * 
+         * // set scene
+         * rootPaneSearchTags.setCenter(centerPaneSearchTags);
+         * centerPaneSearchTags.add(TagSearch, 0, 0);
+         * centerPaneSearchTags.add(TagSearchDirections, 0, 1);
+         * centerPaneSearchTags.add(TagSearchButton, 0, 3);
+         * centerPaneSearchTags.add(OwnTagPhotos, 0, 4);
+         * centerPaneSearchTags.add(TagSearchGoBack, 0, 5);
+         * centerPaneSearchTags.add(TagSearchField, 0, 2);
+         * 
+         * Scene SearchTagScene = new Scene(rootPaneSearchTags, 700, 600);
+         * sm.searchTagsScene = SearchTagScene;
+         * 
+         * List<String> tags_to_search = new ArrayList<>();
+         * int photoToGetOthers = 0;
+         * int photoToGetOwn = 0;
+         * boolean showingOwnPhotos = false;
+         * 
+         * OwnTagPhotos.setOnAction(ev -> {
+         * 
+         * String tagsFieldResult = TagSearchField.getText();
+         * int n = 0;
+         * for (int m = 0; m < tagsFieldResult.length(); m++) {
+         * 
+         * if (tagsFieldResult.substring(m, m + 1).equals(" ")) {
+         * tags_to_search.add(tagsFieldResult.substring(n, m));
+         * n = m + 1;
+         * } else if (m >= tagsFieldResult.length() - 1) {
+         * tags_to_search.add(tagsFieldResult.substring(n, m + 1));
+         * }
+         * 
+         * }
+         * 
+         * // populate an array with list of tags
+         * String[] search_all_tags = new String[tags_to_search.size()];
+         * n = 0;
+         * for (String tag : tags_to_search) {
+         * search_all_tags[n] = tag;
+         * n++;
+         * System.out.println(tag);
+         * }
+         * List<Integer> all_photos_with_tags = new ArrayList<>();
+         * try {
+         * 
+         * all_photos_with_tags =
+         * Main.db.getPhotosByMultipleTagsAndUser(search_all_tags, Main.curr_user);
+         * System.out.println(all_photos_with_tags.size());
+         * if (all_photos_with_tags.size() > 0) {
+         * sm.switchToMultipleTagSearch(true, all_photos_with_tags);
+         * }
+         * 
+         * } catch (SQLException e) {
+         * e.printStackTrace();
+         * }
+         * 
+         * });
+         * 
+         * TagSearchButton.setOnAction(ev -> {
+         * 
+         * // extract tags from search field
+         * String tagsFieldResult = TagSearchField.getText();
+         * int n = 0;
+         * for (int m = 0; m < tagsFieldResult.length(); m++) {
+         * 
+         * if (tagsFieldResult.substring(m, m + 1).equals(" ")) {
+         * tags_to_search.add(tagsFieldResult.substring(n, m));
+         * n = m + 1;
+         * } else if (m >= tagsFieldResult.length() - 1) {
+         * tags_to_search.add(tagsFieldResult.substring(n, m + 1));
+         * }
+         * 
+         * }
+         * 
+         * // populate an array with list of tags
+         * String[] search_all_tags = new String[tags_to_search.size()];
+         * n = 0;
+         * for (String tag : tags_to_search) {
+         * search_all_tags[n] = tag;
+         * n++;
+         * }
+         * List<Integer> all_photos_with_tags = new ArrayList<>();
+         * try {
+         * 
+         * all_photos_with_tags = Main.db.getPhotosByMultipleTags(search_all_tags,
+         * Main.curr_user);
+         * if (all_photos_with_tags.size() > 0) {
+         * sm.switchToMultipleTagSearch(false, all_photos_with_tags);
+         * }
+         * 
+         * } catch (SQLException e) {
+         * e.printStackTrace();
+         * }
+         * });
+         * 
+         * // if go back button pressed, go back to feed
+         * TagSearchGoBack.setOnAction(ev -> {
+         * 
+         * sm.switchToFeed(false);
+         * 
+         * });
+         */
+        // search all photos (not this user's) by multiple tags
+        /*
+         * List<Integer> all_photos_with_tags = new ArrayList<>();
+         * if (!showingOwnPhotos) {
+         * try{
+         * all_photos_with_tags = db.getPhotosByMultipleTags(search_all_tags,
+         * curr_user);
+         * }catch(SQLException e){
+         * e.printStackTrace();
+         * }
+         * } else {
+         * try{
+         * all_photos_with_tags = db.getPhotosByMultipleTagsAndUser(search_all_tags,
+         * curr_user);
+         * }catch(SQLException e){
+         * e.printStackTrace();
+         * }
+         * }
+         * 
+         * 
+         * String url = "";
+         * String poster_firstname = "";
+         * String poster_lastname = "";
+         * String caption = "";
+         * List<Tag> tags = new ArrayList<>();
+         * List<Pair<String, Comment>> comments = new ArrayList<>();
+         * 
+         * List<User> likers = new ArrayList<>();
+         * int total_likes = 0;
+         * User poster = new User();;
+         * Photo pic = new Photo();
+         * 
+         * if (!showingOwnPhotos) {
+         * try {
+         * pic = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOthers));
+         * comments =
+         * Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOthers));
+         * likers =
+         * Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOthers));
+         * tags = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOthers));
+         * poster = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOthers));
+         * } catch (SQLException e) {
+         * 
+         * }
+         * } else {
+         * try {
+         * pic = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOwn));
+         * comments =
+         * Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOwn));
+         * likers = Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOwn));
+         * tags = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOwn));
+         * poster = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOwn));
+         * } catch (SQLException e) {
+         * 
+         * }
+         * }
+         * 
+         * poster_firstname = poster.firstName;
+         * poster_lastname = poster.lastName;
+         * 
+         * caption = pic.caption;
+         * url = pic.url;
+         * 
+         * total_likes = likers.size();
+         * 
+         * InputStream is = Main.class.getClassLoader().getResourceAsStream(url);
+         * Image image = new Image(is);
+         * 
+         * ImageView view = new ImageView(image);
+         * 
+         * view.setX(25);
+         * view.setY(25);
+         * 
+         * view.setFitHeight(100);
+         * view.setFitWidth(100);
+         * 
+         * view.setPreserveRatio(true);
+         * 
+         * Label comment0 = new Label("Comments");
+         * 
+         * comment0.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+         * comment0.setTextFill(Color.INDIGO);
+         * 
+         * Label comment1 = new Label("");
+         * comment1.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
+         * comment1.setTextFill(Color.BLACK);
+         * 
+         * Label numLikes = new Label(total_likes + " Likes"); // NOT SURE WHERE TO GET
+         * LIKES FROM
+         * 
+         * numLikes.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+         * numLikes.setTextFill(Color.TEAL);
+         * 
+         * HBox hBox2 = new HBox();
+         * hBox2.setPadding(new Insets(10, 10, 10, 10));
+         * hBox2.setSpacing(5);
+         * 
+         * hBox2.setAlignment(Pos.CENTER_RIGHT);
+         * hBox2.getChildren().add(view);
+         * 
+         * Button next = new Button("Next pic");
+         * next.setMaxSize(100.0, 100.0);
+         * rootPaneSearchTags.setBottom(next);
+         * 
+         * VBox vBox = new VBox();
+         * vBox.setPadding(new Insets(10, 10, 10, 20));
+         * vBox.setSpacing(5);
+         * // vBox.setAlignment(Pos.CENTER);
+         * vBox.getChildren().addAll(hBox2, numLikes, comment0, comment1);
+         * 
+         * for (int p = 0; p < comments.size(); p++) {
+         * Pair<String, Comment> full_comment = comments.get(p);
+         * String comm = full_comment.getKey() + " " + full_comment.getValue().text;
+         * vBox.getChildren().add(new Label(comm));
+         * }
+         * 
+         * Scene showPhotosViaTagFilterScene = new Scene(rootPaneSearchTags, 700, 600);
+         * primaryStage.setTitle("Social Media App");
+         * primaryStage.setScene(showPhotosViaTagFilterScene);
+         * primaryStage.show();
+         * 
+         * next.setOnAction(eve -> {
+         * /*
+         * String urlNext = "";
+         * String poster_firstnameNext = "";
+         * String poster_lastnameNext = "";
+         * String captionNext = "";
+         * List<Tag> tagsNext = new ArrayList<>();
+         * List<Pair<String, Comment>> commentsNext = new ArrayList<>();
+         * 
+         * List<User> likersNext = new ArrayList<>();
+         * int total_likesNext = 0;
+         * User posterNext = new User();;
+         * Photo picNext = new Photo();
+         * 
+         * if (!showingOwnPhotos) {
+         * try {
+         * picNext = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOthers + 1));
+         * commentsNext =
+         * Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOthers + 1));
+         * likersNext =
+         * Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOthers + 1));
+         * tagsNext = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOthers +
+         * 1));
+         * posterNext = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOthers
+         * + 1));
+         * } catch (SQLException e) {
+         * 
+         * }
+         * } else {
+         * try {
+         * picNext = db.fetchPhotoInfo(all_photos_with_tags.get(photoToGetOwn + 1));
+         * commentsNext =
+         * Main.db.fetchPhotoComments(all_photos_with_tags.get(photoToGetOwn + 1));
+         * likersNext = Main.db.fetchPhotoLikers(all_photos_with_tags.get(photoToGetOwn
+         * + 1));
+         * tagsNext = Main.db.fetchPhotoTags(all_photos_with_tags.get(photoToGetOwn +
+         * 1));
+         * posterNext = Main.db.fetchPhotoUser(all_photos_with_tags.get(photoToGetOwn +
+         * 1));
+         * } catch (SQLException e) {
+         * 
+         * }
+         * }
+         * 
+         * poster_firstnameNext = posterNext.firstName;
+         * poster_lastnameNext = posterNext.lastName;
+         * 
+         * captionNext = picNext.caption;
+         * urlNext = picNext.url;
+         * 
+         * total_likesNext = likersNext.size();
+         * 
+         * InputStream isNext =
+         * Main.class.getClassLoader().getResourceAsStream(urlNext);
+         * Image imageNext = new Image(isNext);
+         * 
+         * ImageView viewNext = new ImageView(imageNext);
+         * 
+         * viewNext.setX(25);
+         * viewNext.setY(25);
+         * 
+         * viewNext.setFitHeight(100);
+         * viewNext.setFitWidth(100);
+         * 
+         * viewNext.setPreserveRatio(true);
+         * 
+         * Label comment0Next = new Label("Comments");
+         * 
+         * comment0Next.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+         * comment0Next.setTextFill(Color.INDIGO);
+         * 
+         * Label comment1Next = new Label("");
+         * comment1Next.setFont(Font.font("Verdana", FontPosture.REGULAR, 10));
+         * comment1Next.setTextFill(Color.BLACK);
+         * 
+         * Label numLikesNext = new Label(total_likesNext + " Likes"); // NOT SURE WHERE
+         * TO GET LIKES FROM
+         * 
+         * numLikesNext.setFont(Font.font("Verdana", FontPosture.REGULAR, 15));
+         * numLikesNext.setTextFill(Color.TEAL);
+         * 
+         * HBox hBox2Next = new HBox();
+         * hBox2Next.setPadding(new Insets(10, 10, 10, 10));
+         * hBox2Next.setSpacing(5);
+         * 
+         * hBox2Next.setAlignment(Pos.CENTER_RIGHT);
+         * hBox2Next.getChildren().add(view);
+         * 
+         * VBox vBoxNext = new VBox();
+         * vBoxNext.setPadding(new Insets(10, 10, 10, 20));
+         * vBoxNext.setSpacing(5);
+         * // vBox.setAlignment(Pos.CENTER);
+         * vBoxNext.getChildren().addAll(hBox2Next, numLikesNext, comment0Next,
+         * comment1Next);
+         * 
+         * for (int p = 0; p < comments.size(); p++) {
+         * Pair<String, Comment> full_comment = comments.get(p);
+         * String comm = full_comment.getKey() + " " + full_comment.getValue().text;
+         * vBox.getChildren().add(new Label(comm));
+         * }
+         * 
+         * Scene showPhotosViaTagFilterSceneNext = new Scene(rootPaneSearchTags, 700,
+         * 600);
+         * primaryStage.setTitle("Social Media App");
+         * primaryStage.setScene(showPhotosViaTagFilterSceneNext);
+         * primaryStage.show();
+         * 
+         * });
+         */
 
         /*
          * //search this user's photos by multiple tags
