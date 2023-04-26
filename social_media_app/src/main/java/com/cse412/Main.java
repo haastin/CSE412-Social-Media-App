@@ -838,7 +838,7 @@ public class Main extends Application {
         centerPaneSearchComments.add(SearchForComment, 0, 1);
         centerPaneSearchComments.add(CommentToSearch, 1, 1);
         centerPaneSearchComments.add(SearchForCommentButton, 0, 2);
-        centerPaneSearchComments.add(SearchCommentsGoBack, 0, 13);
+        centerPaneSearchComments.add(SearchCommentsGoBack, 4, 0);
 
         // create scene
         Scene SearchCommentsScene = new Scene(rootPaneSearchComments, 700, 600);
@@ -847,6 +847,14 @@ public class Main extends Application {
 
         // search by comment when search button is pressed
         SearchForCommentButton.setOnAction(ev -> {
+
+            ObservableList<Node> children = centerPaneSearchComments.getChildren();
+            for (int r = children.size() - 1; r >= 0; r--) {
+                Node child = children.get(r);
+                if (GridPane.getRowIndex(child) != null && GridPane.getRowIndex(child) >= 3) {
+                    centerPaneSearchComments.getChildren().remove(r);
+                }
+            }
 
             String search_comment = CommentToSearch.getText();
             List<List<Object>> matches = new ArrayList<>();
